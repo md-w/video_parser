@@ -1,0 +1,9 @@
+mkdir thirdparty
+git submodule add https://github.com/pybind/pybind11.git thirdparty/pybind11
+cd thirdparty/pybind11
+git checkout v2.7.1
+cd ../..
+git add thirdparty/pybind11
+git commit -m "pybind11 v2.7.1 is used"
+git push
+git submodule update --recursive --remote
