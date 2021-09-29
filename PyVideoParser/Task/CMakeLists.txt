@@ -36,6 +36,7 @@ add_subdirectory(Core)
 add_library(Task STATIC
     src/VideoParser.cpp
     src/FFmpegDemuxer.cpp
+    src/MemoryInterfaces.cpp
 )
 
 target_include_directories(Task

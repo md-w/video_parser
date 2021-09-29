@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "cpp SampleVideoParser",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/venv/Scripts/python.exe",
+            "args": [
+                "SampleVideoParser.py"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "console": "externalTerminal",
+        },
+        {
             "name": "SampleVideoParser.py",
             "type": "python",
             "request": "launch",

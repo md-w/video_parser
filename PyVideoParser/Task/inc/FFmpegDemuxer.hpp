@@ -14,6 +14,7 @@ extern "C" {
 }
 
 namespace vp {
+
 class DataProvider {
  public:
   virtual ~DataProvider() = default;
@@ -93,6 +94,9 @@ class FFmpegDemuxer {
 
   bool Demux(uint8_t *&pVideo, size_t &rVideoBytes, PacketData &pktData, uint8_t **ppSEI = nullptr,
              size_t *pSEIBytes = nullptr);
+  bool Seek(SeekContext &seek_ctx, uint8_t *&pVideo, size_t &rVideoBytes, PacketData &pktData,
+            uint8_t **ppSEI = nullptr, size_t *pSEIBytes = nullptr);
+  void Flush();
 };
 
 }  // namespace vp

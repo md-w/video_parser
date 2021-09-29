@@ -63,6 +63,23 @@ class VP_API PyVideoParser {
   uint32_t Height() const;
   std::string Codec() const;
   double Framerate() const;
+
+  void GetLastPacketData(PacketData &pkt_data);
+
+  bool Seek(SeekContext &ctx, vector_t<uint8_t> &packet);
+
+  // ColorSpace GetColorSpace() const;
+
+  // ColorRange GetColorRange() const;
+
+  double AvgFramerate() const;
+
+  bool IsVFR() const;
+
+  uint32_t Numframes() const;
+
+  double Timebase() const;
+
   ~PyVideoParser();
 };
 
