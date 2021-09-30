@@ -1,8 +1,9 @@
 #pragma once
 #ifndef MemoryInterfaces_hpp
 #define MemoryInterfaces_hpp
-#include "Core.hpp"
 #include <cstddef>
+
+#include "Core.hpp"
 #define TRACK_TOKEN_ALLOCATIONS
 
 namespace vp {

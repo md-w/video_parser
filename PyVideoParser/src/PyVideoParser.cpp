@@ -10,25 +10,58 @@ PyVideoParser::PyVideoParser(const std::string &pathToFile)
 PyVideoParser::PyVideoParser(const std::string &pathToFile, const std::map<std::string, std::string> &ffmpeg_options) {
   upVideoParser.reset(VideoParser::Make(pathToFile, ffmpeg_options));
 }
+
 bool PyVideoParser::DemuxSinglePacket(vector_t<uint8_t> &frame, vector_t<uint8_t> &packet) {
   Buffer *elementaryVideo = nullptr;
-  do {
+  if (frame.size() > 0) {
+    auto pRawFrame = Buffer::Make(frame.size(),
+#ifdef GENERATE_PYTHON_BINDINGS
+                                  frame.mutable_data());
+#else
+                                  frame.data());
+#endif
+
+    upVideoParser->SetInput(pRawFrame, 0U);
     if (TaskExecStatus::TASK_EXEC_FAIL == upVideoParser->Execute()) {
+      upVideoParser->ClearInputs();
+      delete pRawFrame;
+      return false;
+    }
+    delete pRawFrame;
+    elementaryVideo = (Buffer *)upVideoParser->GetOutput(0U);
+    if (elementaryVideo) {
+      packet.resize({elementaryVideo->GetRawMemSize()}, false);
+#ifdef GENERATE_PYTHON_BINDINGS
+      memcpy(packet.mutable_data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
+#else
+      memcpy(packet.data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
+#endif
+      upVideoParser->ClearInputs();
+      return true;
+
+    } else {
       upVideoParser->ClearInputs();
       return false;
     }
-    elementaryVideo = (Buffer *)upVideoParser->GetOutput(0U);
-  } while (!elementaryVideo);
+  } else {
+    do {
+      if (TaskExecStatus::TASK_EXEC_FAIL == upVideoParser->Execute()) {
+        upVideoParser->ClearInputs();
+        return false;
+      }
+      elementaryVideo = (Buffer *)upVideoParser->GetOutput(0U);
+    } while (!elementaryVideo);
 
-  packet.resize({elementaryVideo->GetRawMemSize()}, false);
+    packet.resize({elementaryVideo->GetRawMemSize()}, false);
 #ifdef GENERATE_PYTHON_BINDINGS
-  memcpy(packet.mutable_data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
+    memcpy(packet.mutable_data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
 #else
-  memcpy(packet.data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
+    memcpy(packet.data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
 #endif
 
-  upVideoParser->ClearInputs();
-  return true;
+    upVideoParser->ClearInputs();
+    return true;
+  }
 };
 bool PyVideoParser::DemuxSinglePacket(vector_t<uint8_t> &packet) {
   vector_t<uint8_t> t;

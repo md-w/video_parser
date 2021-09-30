@@ -4,8 +4,8 @@
 #include <map>
 #include <string>
 
-#include "Core.hpp"
 #include "CodecSupport.hpp"
+#include "Core.hpp"
 
 namespace vp {
 

@@ -1,5 +1,5 @@
 {
-    "configurations": [
+    "configurations": [        
         {
             "name": "Win32",
             "includePath": [
@@ -15,7 +15,8 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-msvc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }
     ],
     "version": 4
