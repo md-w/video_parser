@@ -1,5 +1,7 @@
 #include "PyVideoParser.hpp"
 
+#include <string.h>
+
 #include "MemoryInterfaces.hpp"
 using namespace vp;
 PyVideoParser::PyVideoParser() : PyVideoParser("") {}
@@ -29,7 +31,8 @@ bool PyVideoParser::DemuxSinglePacket(vector_t<uint8_t> &frame, vector_t<uint8_t
   return true;
 };
 bool PyVideoParser::DemuxSinglePacket(vector_t<uint8_t> &packet) {
-  return DemuxSinglePacket(vector_t<uint8_t>(), packet);
+  vector_t<uint8_t> t;
+  return DemuxSinglePacket(t, packet);
 }
 uint32_t PyVideoParser::Width() const {
   MuxingParams params;

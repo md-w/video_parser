@@ -7,3 +7,4 @@ git add thirdparty/pybind11
 git commit -m "pybind11 v2.7.1 is used"
 git push
 git submodule update --recursive --remote
+git submodule update --recursive --init

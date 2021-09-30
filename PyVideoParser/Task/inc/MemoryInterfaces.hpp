@@ -2,6 +2,7 @@
 #ifndef MemoryInterfaces_hpp
 #define MemoryInterfaces_hpp
 #include "Core.hpp"
+#include <cstddef>
 #define TRACK_TOKEN_ALLOCATIONS
 
 namespace vp {

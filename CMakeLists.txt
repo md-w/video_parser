@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 
-project(VideoParser LANGUAGES CUDA CXX)
+project(VideoParser LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

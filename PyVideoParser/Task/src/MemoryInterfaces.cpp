@@ -1,5 +1,6 @@
 #include "MemoryInterfaces.hpp"
 
+#include <string.h>
 #ifdef TRACK_TOKEN_ALLOCATIONS
 #include <algorithm>
 #include <atomic>
