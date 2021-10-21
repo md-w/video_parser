@@ -22,7 +22,7 @@ if(WIN32)
 endif(WIN32)
 add_subdirectory(thirdparty/pybind11)
 add_subdirectory(PyVideoParser)
-
+add_subdirectory(PyOpencvWrapper)
 #Bring all the stuff together
 # install(FILES $<TARGET_FILE:TC_CORE>										DESTINATION bin)
 # install(FILES $<TARGET_FILE:TC>												DESTINATION bin)
