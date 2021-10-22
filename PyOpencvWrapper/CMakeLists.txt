@@ -2,45 +2,38 @@ cmake_minimum_required(VERSION 3.17)
 
 project(PyOpencvWrapper)
 
-find_package(Git REQUIRED)
 
-include(ExternalProject)
 
-# OpenCV
-set(OPENCV_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/opencv)
-ExternalProject_Add(opencv
-        GIT_REPOSITORY https://github.com/opencv/opencv
-        GIT_TAG 4.5.4 # 4.0.0-alpha
-        SOURCE_DIR opencv
-        BINARY_DIR opencv-build
-        CMAKE_ARGS
-          -DBUILD_SHARED_LIBS=OFF
-          -DBUILD_opencv_world=OFF
-          -DBUILD_opencv_java=OFF
-          -DBUILD_opencv_python2=OFF
-          -DBUILD_opencv_python3=OFF
-          -DWITH_PYTHON=OFF
-          -DWITH_CUDA=OFF
-          -DBUILD_opencv_apps=OFF
-          -DBUILD_EXAMPLES=OFF
-          -DBUILD_DOCS=OFF
-          -DBUILD_PERF_TESTS=OFF
-          -DBUILD_TESTS=OFF
-          -DWITH_TBB=ON
-          -DWITH_OPENMP=ON
-          -DWITH_IPP=ON
-          -DCMAKE_INSTALL_PREFIX=${OPENCV_INSTALL_LOCATION}
-        )
-# include_directories(${OPENCV_INSTALL_LOCATION}/include/opencv4)
-# link_directories(${OPENCV_INSTALL_LOCATION}/lib)
 set(OpenCV_STATIC TRUE)
 
-find_package( OpenCV REQUIRED PATHS ${OPENCV_INSTALL_LOCATION})
+# find_package(OpenCV REQUIRED)
+message(STATUS "OpenCV_LIBS:" + ${OPENCV_LIBRARIES} + ${OPENCV_LIBRARY_DIR})
+message(STATUS "OpenCV_INCLUDE_DIR:" + ${OPENCV_INCLUDE_DIR})
+set(OpenCV_STATIC TRUE)
+set(OpenCV_RUNTIME vc16)
+find_package( OpenCV REQUIRED PATHS ${CMAKE_BINARY_DIR}/thirdparty)
 
-add_executable(vtpl
-    src/main.cpp
+add_executable(vtpl_opencv
+    #src/main.cpp
+    src/benchmark_opencv.cpp
 )
 
-target_link_libraries(vtpl 
+target_link_libraries(vtpl_opencv 
+    PUBLIC ${OpenCV_LIBS}
+)
+
+add_executable(vtpl_vimagecodec
+    #src/main.cpp
+    src/AVFReader.cpp
+    src/codecManager.cpp
+    src/utils.cpp
+    src/benchmark_vimagecodec.cpp
+)
+
+target_include_directories(vtpl_vimagecodec
+    PUBLIC inc
+)
+
+target_link_libraries(vtpl_vimagecodec
     PUBLIC ${OpenCV_LIBS}
 )

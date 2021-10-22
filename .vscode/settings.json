@@ -86,9 +86,10 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "csignal": "cpp"
     },
-    "C_Cpp.clang_format_fallbackStyle": " { BasedOnStyle: Google, ColumnLimit: 120}",
+    //"C_Cpp.clang_format_fallbackStyle": " { BasedOnStyle: Google, ColumnLimit: 120}",
     "python.autoComplete.extraPaths": [
         "build/PyVideoParser/Debug/PyVideoParser.cp39-win_amd64.pyd",
         "build/PyVideoParser/Relese/PyVideoParser.cp39-win_amd64.pyd",

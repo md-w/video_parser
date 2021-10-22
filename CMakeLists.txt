@@ -21,6 +21,8 @@ if(WIN32)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif(WIN32)
 add_subdirectory(thirdparty/pybind11)
+# include(thirdparty/External-OpenCV-cpu.cmake)
+
 add_subdirectory(PyVideoParser)
 add_subdirectory(PyOpencvWrapper)
 #Bring all the stuff together
