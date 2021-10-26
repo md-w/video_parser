@@ -200,7 +200,7 @@ int main(int argc, char const* argv[])
   int nGpu = 1;
   int number_of_channels = 1;
   int gpu_id = -1;
-  cv::setNumThreads(2);
+  // cv::setNumThreads(2);
   ///*
   if (argc < 2) {
     std::cout << " number_of_channels "

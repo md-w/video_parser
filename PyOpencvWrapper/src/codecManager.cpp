@@ -91,7 +91,7 @@ InitDecoderGPU _initDecoderGPU;
 int _LoadCodecLibrary()
 {
 #ifdef _WIN32
-  HINSTANCE dllHandle = LoadLibraryA("./lib/VImageCodec3.dll");
+  HINSTANCE dllHandle = LoadLibraryA("./lib/VImageCodec.dll");
 #else
   void* dllHandle = dlopen("./lib/libVImageCodecCUDA2021.so", RTLD_LAZY);
 #endif

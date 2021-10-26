@@ -33,4 +33,5 @@
 
 build/
 videos/
+thirdparty
 thirdparty/ffmpeg/

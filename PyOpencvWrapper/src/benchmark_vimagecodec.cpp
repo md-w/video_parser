@@ -2,6 +2,7 @@
 
 #include "AVFReader.h"
 #include "CodecManager.h"
+#include "UltraFace.h"
 #include "VReturnStatus.h"
 #include "opencv2/opencv.hpp"
 #include "utils.hpp"
@@ -15,7 +16,6 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-
 // namespace
 
 class FpsValue
@@ -129,6 +129,7 @@ private:
   int bufferLen = 2 * 1024 * 1024;
   unsigned char* buffer = NULL;
   unsigned char* rgbBuffer = NULL;
+  UltraFace ultraface;
 
 public:
   Worker(int gpu_id, int channel_id, const std::string enc_file, int to_width,
@@ -190,14 +191,20 @@ public:
               rgbBuffer = (unsigned char*)malloc(rgbWidth * rgbHeight * 4);
             } else if (rs == VA_SUCCESS) {
               // printf("thread=====%d\n", std::this_thread::get_id());
-              std::this_thread::sleep_for(std::chrono::milliseconds(1));
-              char op[250] = {
-                  0,
-              };
-              sprintf(op, "./dump_1/%05d_%05llu.ppm", frame_count,
-                      outTimeStamp);
-              writePPMFromBgra(rgbBuffer, rgbHeight, rgbWidth, op);
+              // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+              // char op[250] = {
+              //     0,
+              // };
+              // sprintf(op, "./dump_1/%05d_%05llu.ppm", frame_count,
+              //         outTimeStamp);
+              // writePPMFromBgra(rgbBuffer, rgbHeight, rgbWidth, op);
               // printf("\n[%d] Success", frame_count);
+              // cv::Mat inMat = cv::Mat(rgbHeight, rgbWidth, CV_8UC4,
+              //                         (unsigned char*)rgbBuffer);
+              // cv::Mat frame;
+              // cv::cvtColor(inMat, frame,
+              //              cv::ColorConversionCodes::COLOR_BGRA2BGR);
+              // ultraface.getResult(frame);
               break;
             } else {
               // printf("\n[%d] Error\n", i);
