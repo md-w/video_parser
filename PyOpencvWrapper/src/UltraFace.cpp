@@ -170,6 +170,7 @@ UltraFace::UltraFace()
     std::cout << "Output names: " << _output_names << std::endl;
     _memory_info = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+    _pTracker = new vtpl::Sort_tracker(10, 1, 0.5, false);
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
     throw std::runtime_error(e.what());
@@ -182,6 +183,7 @@ void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold,
                              float iou_threshold)
 {
   try {
+    bool show_img = false;
     std::vector<int64_t> input_dims = _input_dims_list.at(0);
     int image_height = orig_image_bgr.rows;
     int image_width = orig_image_bgr.cols;
@@ -192,7 +194,8 @@ void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold,
     cv::resize(orig_image_bgr, _resized_image_bgr,
                cv::Size(network_height, network_width), cv::INTER_CUBIC);
 
-    // std::cout << _resized_image_bgr.rowRange(0, 3).colRange(0, 1) << std::endl;
+    // std::cout << _resized_image_bgr.rowRange(0, 3).colRange(0, 1) <<
+    // std::endl;
 
     cv::cvtColor(_resized_image_bgr, _resized_image_rgb,
                  cv::ColorConversionCodes::COLOR_BGR2RGB);
@@ -263,21 +266,71 @@ void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold,
     std::vector<int> nms_class_ids;
     cv::dnn::NMSBoxes(local_boxes, local_confidences, threshold, iou_threshold,
                       nms_indices);
+
+    std::vector<FaceInfo> face_list;
     for (size_t i = 0; i < nms_indices.size(); i++) {
       size_t idx = nms_indices[i];
       nms_boxes.push_back(local_boxes[idx]);
       nms_confidences.push_back(local_confidences[idx]);
       nms_class_ids.push_back(0);
+      FaceInfo temp_face;
+      temp_face.id = 0;
+      temp_face.prob = local_confidences[idx];
+      temp_face.rect = local_boxes[idx];
+      face_list.push_back(temp_face);
     }
+
+    // Tracking - SORT
+    vtpl::TrackingBox detected_box;
     for (size_t idx = 0; idx < nms_boxes.size(); ++idx) {
       cv::Rect box = nms_boxes[idx];
-      int left = cv::max(0, box.x);
-      int top = cv::max(0, box.y);
-      int right = cv::min(box.width + box.x, image_width - 1);
-      int bottom = cv::min(box.height + box.y, image_height - 1);
-      // cv::rectangle(orig_image_bgr, cv::Point(left, top),
-      //               cv::Point(right, bottom), cv::Scalar(0, 0, 255), 4);
+      detected_box.frame_id = 0;
+      detected_box.id = 0;
+      detected_box.box = box;
+      _pTracker_result.push_back(detected_box);
     }
+    _pTracker_result1 = _pTracker->getResult(_pTracker_result, 1.0,
+                                             image_height, image_width, true);
+    _pTracker_result.clear();
+    for (auto& face : face_list) {
+      for (auto& track : _pTracker_result1) {
+        cv::Rect temp_item_box;
+        temp_item_box.x = int(track.box.x);
+        temp_item_box.y = int(track.box.y);
+        temp_item_box.width = int(track.box.width);
+        temp_item_box.height = int(track.box.height);
+
+        bool is_lp_overlapped =
+            (temp_item_box & face.rect).area() > (face.rect.area() * .5);
+        if (!is_lp_overlapped)
+          continue;
+        face.id = track.id;
+      }
+    }
+
+    if (show_img) {
+      for (auto& item : _pTracker_result1) {
+        std::string s = std::to_string(item.id);
+        cv::putText(orig_image_bgr, s, cv::Point(item.box.x, item.box.y), 1,
+                    2.0, CV_RGB(255, 255, 0), 3);
+      }
+    }
+    _pTracker_result1.clear();
+
+    if (show_img) {
+      for (auto& face : face_list) {
+        cv::Rect box = face.rect;
+        int left = cv::max(0, box.x);
+        int top = cv::max(0, box.y);
+        int right = cv::min(box.width + box.x, image_width - 1);
+        int bottom = cv::min(box.height + box.y, image_height - 1);
+        cv::rectangle(orig_image_bgr, cv::Point(left, top),
+                      cv::Point(right, bottom), CV_RGB(255, 0, 0), 4);
+      }
+    }
+
+    face_list.clear();
+
     // cv::imwrite("output.jpg", orig_image_bgr);
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
@@ -291,6 +344,8 @@ UltraFace::~UltraFace()
   for (auto&& i : _output_names) {
     free(i);
   }
+  if (_pTracker)
+    delete _pTracker;
 }
 int UltraFace::load() { return -1; }
 void UltraFace::stop() {}

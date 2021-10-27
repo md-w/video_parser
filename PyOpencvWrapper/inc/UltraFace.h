@@ -2,8 +2,15 @@
 
 #ifndef UltraFace_H
 #define UltraFace_H
+#include "Sort_tracker.h"
 #include <onnxruntime_cxx_api.h>
 #include <opencv2/opencv.hpp>
+typedef struct _FaceInfo {
+  cv::Rect rect;
+  int id;
+  float prob;
+} FaceInfo;
+
 class UltraFace
 {
 private:
@@ -27,9 +34,12 @@ private:
   std::vector<float> _output_boxes_tensor_values;
   Ort::MemoryInfo _memory_info;
 
-  void faceDetector(cv::Mat& origImage, float threshold = 0.7, float iou_threshold = 0.5);
-  void scale(cv::Rect2i box);
+  vtpl::Sort_tracker* _pTracker{nullptr};
+  std::vector<vtpl::TrackingBox> _pTracker_result;
+  std::vector<vtpl::TrackingBox> _pTracker_result1;
 
+  void faceDetector(cv::Mat& origImage, float threshold = 0.7,
+                    float iou_threshold = 0.5);
 public:
   UltraFace();
   ~UltraFace();

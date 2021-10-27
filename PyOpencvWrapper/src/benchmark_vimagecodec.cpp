@@ -199,12 +199,15 @@ public:
               //         outTimeStamp);
               // writePPMFromBgra(rgbBuffer, rgbHeight, rgbWidth, op);
               // printf("\n[%d] Success", frame_count);
-              // cv::Mat inMat = cv::Mat(rgbHeight, rgbWidth, CV_8UC4,
-              //                         (unsigned char*)rgbBuffer);
-              // cv::Mat frame;
-              // cv::cvtColor(inMat, frame,
-              //              cv::ColorConversionCodes::COLOR_BGRA2BGR);
-              // ultraface.getResult(frame);
+              cv::Mat inMat = cv::Mat(rgbHeight, rgbWidth, CV_8UC4,
+                                      (unsigned char*)rgbBuffer);
+              cv::Mat frame;
+              cv::cvtColor(inMat, frame,
+                           cv::ColorConversionCodes::COLOR_BGRA2BGR);
+              ultraface.getResult(frame);
+              // cv::namedWindow("vtpl_opencv", cv::WINDOW_NORMAL);
+              // cv::imshow("vtpl_opencv", frame);
+              // cv::waitKey(1);
               break;
             } else {
               // printf("\n[%d] Error\n", i);

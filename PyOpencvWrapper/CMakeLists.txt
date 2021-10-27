@@ -17,10 +17,26 @@ endif()
 include_directories("${ONNXRUNTIME_ROOTDIR}/include" "${ONNXRUNTIME_ROOTDIR}/include/onnxruntime/core/session" "${ONNXRUNTIME_ROOTDIR}/include/onnxruntime/core/providers/cpu")
 link_directories("${ONNXRUNTIME_ROOTDIR}/lib")
 
-add_executable(vtpl_opencv
-    #src/main.cpp
-    src/benchmark_opencv.cpp
+add_library(ultra_face
     src/UltraFace.cpp
+    Sort_tracker/src/Hungarian.cpp
+    Sort_tracker/src/KalmanTracker.cpp
+    Sort_tracker/src/Sort_tracker.cpp
+)
+
+target_include_directories(ultra_face
+    PUBLIC inc
+    PUBLIC Sort_tracker/inc
+
+)
+
+target_link_libraries(ultra_face
+    PUBLIC onnxruntime
+    PUBLIC ${OpenCV_LIBS}
+)
+
+add_executable(vtpl_opencv
+    src/benchmark_opencv.cpp
 )
 
 target_include_directories(vtpl_opencv
@@ -28,8 +44,8 @@ target_include_directories(vtpl_opencv
 )
 
 target_link_libraries(vtpl_opencv
-    PRIVATE onnxruntime
     PUBLIC ${OpenCV_LIBS}
+    PUBLIC ultra_face
 )
 
 add_executable(vtpl_vimagecodec
@@ -38,7 +54,6 @@ add_executable(vtpl_vimagecodec
     src/codecManager.cpp
     src/utils.cpp
     src/benchmark_vimagecodec.cpp
-    src/UltraFace.cpp
 )
 
 target_include_directories(vtpl_vimagecodec
@@ -46,13 +61,12 @@ target_include_directories(vtpl_vimagecodec
 )
 
 target_link_libraries(vtpl_vimagecodec
-    PRIVATE onnxruntime
     PUBLIC ${OpenCV_LIBS}
+    PUBLIC ultra_face
 )
 
 add_executable(vtpl_ultraface
-    src/UltraFace.cpp
-    src/UltraFacemain.cpp
+    src/UltraFaceMain.cpp
 )
 
 target_include_directories(vtpl_ultraface
@@ -60,6 +74,6 @@ target_include_directories(vtpl_ultraface
 )
 
 target_link_libraries(vtpl_ultraface
-    PRIVATE onnxruntime
     PUBLIC ${OpenCV_LIBS}
+    PUBLIC ultra_face
 )

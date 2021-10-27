@@ -1,4 +1,5 @@
 
+#include "UltraFace.h"
 #include "opencv2/opencv.hpp"
 #include <atomic>
 #include <condition_variable>
@@ -124,6 +125,7 @@ private:
   int bufferLen = 2 * 1024 * 1024;
   unsigned char* buffer = NULL;
   unsigned char* rgbBuffer = NULL;
+  UltraFace ultraface;
 
 public:
   Worker(int gpu_id, int channel_id, const std::string enc_file, int to_width,
@@ -155,16 +157,31 @@ public:
       std::cout << "Error opening video stream or file" << std::endl;
       return false;
     }
-    cv::Mat frame;
-    if (!reader->read(frame)) {
+    cv::Mat frame1;
+    if (!reader->read(frame1)) {
       std::cout << "Error reading video file" << std::endl;
       return false;
     }
-    if (frame.empty()) {
+    if (frame1.empty()) {
       std::cout << "Error frame empty" << std::endl;
       return false;
     }
 
+    cv::Mat frame;
+    if (false) {
+      cv::Rect t_roi;
+      t_roi.x = 0;
+      t_roi.y = int(0.5 * frame1.rows);
+      t_roi.width = frame1.cols;
+      t_roi.height = frame1.rows - t_roi.y;
+      frame = frame1(t_roi);
+    } else {
+      frame = frame1;
+    }
+    ultraface.getResult(frame);
+    // cv::namedWindow("vtpl_opencv", cv::WINDOW_NORMAL);
+    // cv::imshow("vtpl_opencv", frame);
+    // cv::waitKey(1);
     frame_count++;
     return true;
   }

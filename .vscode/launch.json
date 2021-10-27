@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Opencv_UltraFace",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_opencv.exe",
+            "args": ["1", "-1"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "UltraFace",
             "type": "cppvsdbg",
             "request": "launch",
