@@ -5,7 +5,7 @@ int main(int argc, char const* argv[])
   std::string imageFilepath = "1.jpg";
   cv::Mat image_bgr = cv::imread(imageFilepath, cv::ImreadModes::IMREAD_COLOR);
   UltraFace ultraface;
-  int numTests{1000};
+  int numTests{1};
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
   for (int i = 0; i < numTests; i++) {

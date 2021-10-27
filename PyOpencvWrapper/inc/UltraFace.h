@@ -27,7 +27,7 @@ private:
   std::vector<float> _output_boxes_tensor_values;
   Ort::MemoryInfo _memory_info;
 
-  void faceDetector(cv::Mat& origImage, float threshold = 0.7);
+  void faceDetector(cv::Mat& origImage, float threshold = 0.7, float iou_threshold = 0.5);
   void scale(cv::Rect2i box);
 
 public:

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_ultraface.exe",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
             "environment": [],
             "console": "integratedTerminal"

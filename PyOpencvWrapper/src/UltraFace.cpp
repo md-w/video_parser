@@ -172,42 +172,41 @@ UltraFace::UltraFace()
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
+    throw std::runtime_error(e.what());
   }
 
   std::cout << "Success to load " << _model_path_str << std::endl;
 }
-void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold)
+
+void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold,
+                             float iou_threshold)
 {
   try {
     std::vector<int64_t> input_dims = _input_dims_list.at(0);
+    int image_height = orig_image_bgr.rows;
+    int image_width = orig_image_bgr.cols;
+
+    int network_height = input_dims.at(2);
+    int network_width = input_dims.at(3);
+
     cv::resize(orig_image_bgr, _resized_image_bgr,
-               cv::Size(input_dims.at(2), input_dims.at(3)),
-               cv::InterpolationFlags::INTER_CUBIC);
+               cv::Size(network_height, network_width), cv::INTER_CUBIC);
+
+    // std::cout << _resized_image_bgr.rowRange(0, 3).colRange(0, 1) << std::endl;
 
     cv::cvtColor(_resized_image_bgr, _resized_image_rgb,
                  cv::ColorConversionCodes::COLOR_BGR2RGB);
 
-    _resized_image_rgb.convertTo(_resized_image, CV_32F, 1.0 / 128);
-
-    cv::Mat channels[3];
-    cv::split(_resized_image, channels);
-
-    channels[0] = (channels[0] - (127.0 / 128));
-    channels[1] = (channels[1] - (127.0 / 128));
-    channels[2] = (channels[2] - (127.0 / 128));
-
-    cv::merge(channels, 3, _resized_image);
+    cv::Scalar image_std = cv::Scalar(128.0);
     // HWC to CHW
-    cv::dnn::blobFromImage(_resized_image, _preprocessed_image);
+    _preprocessed_image = cv::dnn::blobFromImage(
+        _resized_image_rgb, 1 / 127.5, cv::Size(network_width, network_height),
+        cv::Scalar::all(127.5));
 
     _input_image_tensor_values.assign(_preprocessed_image.begin<float>(),
                                       _preprocessed_image.end<float>());
 
-    // assert(("Output tensor size should equal to the label set size.",
-    //         labels.size() == outputTensorSize));
-
     std::vector<Ort::Value> input_tensors;
-    std::vector<Ort::Value> output_tensors;
     {
 
       int64_t input_tensor_size = vectorProduct<int64_t>(input_dims);
@@ -217,6 +216,7 @@ void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold)
           input_dims.data(), input_dims.size()));
     }
 
+    std::vector<Ort::Value> output_tensors;
     {
       std::vector<int64_t> output_dims = _output_dims_list.at(0);
 
@@ -239,9 +239,46 @@ void UltraFace::faceDetector(cv::Mat& orig_image_bgr, float threshold)
                  input_tensors.data(), _input_names.size(),
                  _output_names.data(), output_tensors.data(),
                  _output_names.size());
-    // cv::dnn::NMSBoxes();
-    // std::cout << "Output confidence tensor values: " << _output_confidence_tensor_values << std::endl;
-    // std::cout << "Output boxes tensor values: " << _output_boxes_tensor_values << std::endl;
+
+    int count = _output_dims_list[0].at(1);
+
+    std::vector<cv::Rect> local_boxes;
+    std::vector<float> local_confidences;
+    std::vector<int> nms_indices;
+    for (size_t i = 0; i < count; i++) {
+      float prob = _output_confidence_tensor_values.at(i * 2 + 1);
+      if (prob < threshold) {
+        continue;
+      }
+      int left = _output_boxes_tensor_values.at(i * 4 + 0) * image_width;
+      int top = _output_boxes_tensor_values.at(i * 4 + 1) * image_height;
+      int right = _output_boxes_tensor_values.at(i * 4 + 2) * image_width;
+      int bottom = _output_boxes_tensor_values.at(i * 4 + 3) * image_height;
+      local_confidences.push_back(prob);
+      local_boxes.push_back(
+          cv::Rect(left, top, (right - left + 1), (bottom - top + 1)));
+    }
+    std::vector<cv::Rect> nms_boxes;
+    std::vector<float> nms_confidences;
+    std::vector<int> nms_class_ids;
+    cv::dnn::NMSBoxes(local_boxes, local_confidences, threshold, iou_threshold,
+                      nms_indices);
+    for (size_t i = 0; i < nms_indices.size(); i++) {
+      size_t idx = nms_indices[i];
+      nms_boxes.push_back(local_boxes[idx]);
+      nms_confidences.push_back(local_confidences[idx]);
+      nms_class_ids.push_back(0);
+    }
+    for (size_t idx = 0; idx < nms_boxes.size(); ++idx) {
+      cv::Rect box = nms_boxes[idx];
+      int left = cv::max(0, box.x);
+      int top = cv::max(0, box.y);
+      int right = cv::min(box.width + box.x, image_width - 1);
+      int bottom = cv::min(box.height + box.y, image_height - 1);
+      // cv::rectangle(orig_image_bgr, cv::Point(left, top),
+      //               cv::Point(right, bottom), cv::Scalar(0, 0, 255), 4);
+    }
+    // cv::imwrite("output.jpg", orig_image_bgr);
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
   }
