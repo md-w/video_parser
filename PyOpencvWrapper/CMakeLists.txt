@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(PyOpencvWrapper)
+
+find_package(Iconv REQUIRED)
+message("Iconv ${Iconv_LIBRARY}")
+
 set(OpenCV_STATIC TRUE)
 message(STATUS "OpenCV_Search path:" + ${CMAKE_SOURCE_DIR}/thirdparty/install)
 find_package( OpenCV REQUIRED PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
