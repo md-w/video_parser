@@ -82,25 +82,25 @@ pybind11_add_module(PyOpencvWrapper
     src/PyOpencvWrapper.cpp)
 
 add_library(OpencvWrapper SHARED
-    src/PyVideoParser.cpp)
+    src/PyOpencvWrapper.cpp)
 
 target_include_directories(PyOpencvWrapper
     PUBLIC inc)
 
-target_compile_definitions(PyVideoParser
+target_compile_definitions(PyOpencvWrapper
     PRIVATE GENERATE_PYTHON_BINDINGS)
 
-target_link_libraries(PyVideoParser
-    PUBLIC Task)
+target_link_libraries(PyOpencvWrapper
+    PUBLIC ultra_face)
 
-target_include_directories(VideoParser
+target_include_directories(OpencvWrapper
     PUBLIC inc)
 
-target_compile_definitions(VideoParser
+target_compile_definitions(OpencvWrapper
     PRIVATE VP_EXPORTS)
 
-target_link_libraries(VideoParser
-    PUBLIC Task)
+target_link_libraries(PyOpencvWrapper
+    PUBLIC ultra_face)
 
-install(FILES $<TARGET_FILE:PyVideoParser>	                                DESTINATION bin)
-install(FILES $<TARGET_FILE:VideoParser>	                                DESTINATION bin)
+install(FILES $<TARGET_FILE:PyOpencvWrapper>	                            DESTINATION bin)
+install(FILES $<TARGET_FILE:OpencvWrapper>	                                DESTINATION bin)

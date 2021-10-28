@@ -26,7 +26,9 @@ else:
 
 import PyOpencvWrapper as pw
 
-print(help(pw))
-# py_opencv_wrapper = pw.PyOpencvWrapper()
+# print(help(pw))
+py_opencv_wrapper = pw.PyOpencvWrapper()
+
+
 
 # print(help(pvp))
