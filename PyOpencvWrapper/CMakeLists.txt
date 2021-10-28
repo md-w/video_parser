@@ -77,3 +77,30 @@ target_link_libraries(vtpl_ultraface
     PUBLIC ${OpenCV_LIBS}
     PUBLIC ultra_face
 )
+
+pybind11_add_module(PyOpencvWrapper
+    src/PyOpencvWrapper.cpp)
+
+add_library(OpencvWrapper SHARED
+    src/PyVideoParser.cpp)
+
+target_include_directories(PyOpencvWrapper
+    PUBLIC inc)
+
+target_compile_definitions(PyVideoParser
+    PRIVATE GENERATE_PYTHON_BINDINGS)
+
+target_link_libraries(PyVideoParser
+    PUBLIC Task)
+
+target_include_directories(VideoParser
+    PUBLIC inc)
+
+target_compile_definitions(VideoParser
+    PRIVATE VP_EXPORTS)
+
+target_link_libraries(VideoParser
+    PUBLIC Task)
+
+install(FILES $<TARGET_FILE:PyVideoParser>	                                DESTINATION bin)
+install(FILES $<TARGET_FILE:VideoParser>	                                DESTINATION bin)

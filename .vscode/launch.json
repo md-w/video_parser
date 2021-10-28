@@ -47,5 +47,14 @@
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         },
+        {
+            "name": "SampleOpencvWrapper.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/SampleOpencvWrapper.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+
     ]
 }
