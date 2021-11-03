@@ -22,7 +22,7 @@ if(WIN32)
 endif(WIN32)
 add_subdirectory(thirdparty/pybind11)
 # include(thirdparty/External-OpenCV-cpu.cmake)
-
+# add_subdirectory(temp)
 add_subdirectory(PyVideoParser)
 add_subdirectory(PyOpencvWrapper)
 #Bring all the stuff together
@@ -32,4 +32,3 @@ add_subdirectory(PyOpencvWrapper)
 if(GENERATE_PYTHON_BINDINGS)
 	install(FILES $<TARGET_FILE:PyVideoParser>								DESTINATION bin)
 endif(GENERATE_PYTHON_BINDINGS)
-

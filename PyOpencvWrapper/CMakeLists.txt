@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(PyOpencvWrapper)
+
+find_package(Iconv REQUIRED)
+message("Iconv ${Iconv_LIBRARY}")
+
 set(OpenCV_STATIC TRUE)
 message(STATUS "OpenCV_Search path:" + ${CMAKE_SOURCE_DIR}/thirdparty/install)
 find_package( OpenCV REQUIRED PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
-set(ONNXRUNTIME_ROOTDIR ${CMAKE_SOURCE_DIR}/thirdparty/install)
-message(STATUS "OpenCV_LIBS" ${OpenCV_LIBS})
-if(NOT ONNXRUNTIME_ROOTDIR)
-  if(WIN32)
-    set(ONNXRUNTIME_ROOTDIR "C:/Program Files (x86)/onnxruntime")
-  else()
-    include_directories("/usr/local/include/onnxruntime")
-  endif()
+if(WIN32)
+set(ONNXRUNTIME_ROOTDIR "${CMAKE_SOURCE_DIR}/thirdparty/install")
+else()
+set(ONNXRUNTIME_ROOTDIR "/usr/local")
 endif()
 
 include_directories("${ONNXRUNTIME_ROOTDIR}/include" "${ONNXRUNTIME_ROOTDIR}/include/onnxruntime/core/session" "${ONNXRUNTIME_ROOTDIR}/include/onnxruntime/core/providers/cpu")
@@ -77,3 +77,30 @@ target_link_libraries(vtpl_ultraface
     PUBLIC ${OpenCV_LIBS}
     PUBLIC ultra_face
 )
+
+pybind11_add_module(PyOpencvWrapper
+    src/PyOpencvWrapper.cpp)
+
+add_library(OpencvWrapper SHARED
+    src/PyOpencvWrapper.cpp)
+
+target_include_directories(PyOpencvWrapper
+    PUBLIC inc)
+
+target_compile_definitions(PyOpencvWrapper
+    PRIVATE GENERATE_PYTHON_BINDINGS)
+
+target_link_libraries(PyOpencvWrapper
+    PUBLIC ultra_face)
+
+target_include_directories(OpencvWrapper
+    PUBLIC inc)
+
+target_compile_definitions(OpencvWrapper
+    PRIVATE VP_EXPORTS)
+
+target_link_libraries(PyOpencvWrapper
+    PUBLIC ultra_face)
+
+install(FILES $<TARGET_FILE:PyOpencvWrapper>	                            DESTINATION bin)
+install(FILES $<TARGET_FILE:OpencvWrapper>	                                DESTINATION bin)
