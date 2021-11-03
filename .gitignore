@@ -31,6 +31,8 @@
 *.out
 *.app
 
+venv
+.venv
 build/
 videos/
 thirdparty/dlib

@@ -2,6 +2,8 @@
 #ifndef PyOpencvWrapper_h
 #define PyOpencvWrapper_h
 
+#include "UltraFace.h"
+#include <functional>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -9,6 +11,7 @@
 #include <vector>
 
 #ifdef GENERATE_PYTHON_BINDINGS
+#include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -49,12 +52,19 @@ public:
   }
   ~OpencvWrapperException() {}
 };
+
+using AnalyticsEventHandlerInput = vector_t<uint8_t>;
+using AnalyticsEventHandlerCallback =
+    std::function<int(AnalyticsEventHandlerInput& image)>;
 class VP_API PyOpencvWrapper
 {
-
-public:
-  PyOpencvWrapper();
+private:
+  std::vector<AnalyticsEventHandlerCallback> analytics_event_handlers;
+  std::unique_ptr<UltraFace> ultra_face;
+  public : PyOpencvWrapper();
   ~PyOpencvWrapper();
+  void AnalyticsEventHandler(AnalyticsEventHandlerCallback callback);
+  void Call(AnalyticsEventHandlerInput& image);
 };
 } // namespace vp
 

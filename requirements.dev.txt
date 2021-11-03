@@ -1,0 +1,11 @@
+pylint
+yapf
+black
+isort
+PyInstaller
+Cython
+wheel
+bump2version
+mypy
+pytest
+GitPython

@@ -30,7 +30,7 @@
             "name": "cpp SampleVideoParser",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/venv/Scripts/python.exe",
+            "program": "${workspaceFolder}/.venv/Scripts/python.exe",
             "args": [
                 "SampleVideoParser.py"
             ],

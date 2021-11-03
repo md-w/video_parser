@@ -118,7 +118,7 @@ UltraFace::UltraFace()
       GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   std::cout << "Trying to load " << _model_path_str << std::endl;
   try {
-    _session = Ort::Session(_env, _model_path_str.c_str(), _session_options);
+    _session = Ort::Session(_env, _model_path.c_str(), _session_options);
     Ort::AllocatorWithDefaultOptions allocator;
 
     size_t numInputNodes = _session.GetInputCount();
