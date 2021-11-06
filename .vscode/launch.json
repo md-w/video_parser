@@ -5,11 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "vtpl_video_stream_tester",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_video_stream_tester.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Opencv_UltraFace",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_opencv.exe",
-            "args": ["1", "-1"],
+            "args": [
+                "1",
+                "-1"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
             "environment": [],
@@ -55,6 +69,5 @@
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         },
-
     ]
 }

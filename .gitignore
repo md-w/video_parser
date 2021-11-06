@@ -39,6 +39,6 @@ thirdparty/dlib
 thirdparty/onnxruntime
 thirdparty/opencv*
 thirdparty/poco
-thirdparty/install
+thirdparty/install*
 thirdparty/ffmpeg
 thirdparty/cmake-build-*

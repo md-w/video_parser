@@ -8,7 +8,7 @@ message("Iconv ${Iconv_LIBRARY}")
 set(OpenCV_STATIC TRUE)
 message(STATUS "OpenCV_Search path:" + ${CMAKE_SOURCE_DIR}/thirdparty/install)
 find_package( OpenCV REQUIRED PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
-find_package( Poco REQUIRED Util Net PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
+find_package( Poco REQUIRED Util Net PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install_debug)
 if(WIN32)
 set(ONNXRUNTIME_ROOTDIR "${CMAKE_SOURCE_DIR}/thirdparty/install")
 else()
@@ -91,6 +91,14 @@ target_include_directories(vtpl_video_stream
 
 target_link_libraries(vtpl_video_stream
     PUBLIC Poco::Net
+)
+
+add_executable(vtpl_video_stream_tester
+    src/VtplVmsStreamGrabberFrameSrcTester.cpp
+)
+
+target_link_libraries(vtpl_video_stream_tester
+    PUBLIC vtpl_video_stream
 )
 
 add_library(OpencvWrapper SHARED
