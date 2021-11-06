@@ -8,6 +8,7 @@ message("Iconv ${Iconv_LIBRARY}")
 set(OpenCV_STATIC TRUE)
 message(STATUS "OpenCV_Search path:" + ${CMAKE_SOURCE_DIR}/thirdparty/install)
 find_package( OpenCV REQUIRED PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
+find_package( Poco REQUIRED Util Net PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install)
 if(WIN32)
 set(ONNXRUNTIME_ROOTDIR "${CMAKE_SOURCE_DIR}/thirdparty/install")
 else()
@@ -78,8 +79,23 @@ target_link_libraries(vtpl_ultraface
     PUBLIC ultra_face
 )
 
+add_library(vtpl_video_stream STATIC
+    src/VtplVideoStream.cpp
+    src/VtplVmsStreamGrabberFrameSrc.cpp
+    src/Decoder.cpp
+)
+
+target_include_directories(vtpl_video_stream
+    PUBLIC inc
+)
+
+target_link_libraries(vtpl_video_stream
+    PUBLIC Poco::Net
+)
+
 add_library(OpencvWrapper SHARED
-    src/PyOpencvWrapper.cpp)
+    src/PyOpencvWrapper.cpp
+)
 
 target_include_directories(OpencvWrapper
     PUBLIC inc)
@@ -89,6 +105,7 @@ target_compile_definitions(OpencvWrapper
 
 target_link_libraries(OpencvWrapper
     PUBLIC ultra_face
+    PUBLIC vtpl_video_stream
 )
 
 pybind11_add_module(PyOpencvWrapper
@@ -105,6 +122,7 @@ target_compile_definitions(PyOpencvWrapper
 
 target_link_libraries(PyOpencvWrapper
     PUBLIC ultra_face
+    PUBLIC vtpl_video_stream
 )
 
 install(FILES $<TARGET_FILE:PyOpencvWrapper>	                            DESTINATION bin)
