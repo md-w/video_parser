@@ -1,8 +1,8 @@
 #include "VtplVmsStreamGrabberFrameSrc.h"
 #include <Poco/ByteOrder.h>
 #include <Poco/Net/NetException.h>
-#include <Poco/Net/StreamSocket.h>
-
+#include <chrono>
+#include <thread>
 bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int bytes_to_read)
 {
   int length = 0;
@@ -20,7 +20,7 @@ bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int 
       } catch (const Poco::TimeoutException& e) {
         break;
       } catch (const Poco::Net::NetException& e) {
-        std::cerr << e.what() << '\n';
+        std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
         break;
       }
     }
@@ -28,9 +28,9 @@ bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int 
   return (length == bytes_to_read);
 }
 VDeviceId::VDeviceId() : VDeviceId(0, 0, 0, 1, 2) {}
-VDeviceId::VDeviceId(int32_t _device_id, int16_t _ch_id, uint8_t _major_or_minor, uint8_t _real_time_mode_or_not,
+VDeviceId::VDeviceId(int32_t _device_id, int16_t _channel_id, uint8_t _major_or_minor, uint8_t _real_time_mode_or_not,
                      uint8_t _decoder_initialized_or_not)
-    : device_id(_device_id), ch_id(_ch_id), major_or_minor(_major_or_minor),
+    : device_id(_device_id), channel_id(_channel_id), major_or_minor(_major_or_minor),
       real_time_mode_or_not(_real_time_mode_or_not), decoder_initialized_or_not(_decoder_initialized_or_not)
 
 {
@@ -42,8 +42,8 @@ void VDeviceId::fromNetwork(std::vector<char>& data_in)
   int offset = 0;
   device_id = Poco::ByteOrder::fromNetwork(decltype(device_id)(*(decltype(device_id)*)(data_in.data() + offset)));
   offset += sizeof(decltype(device_id));
-  ch_id = Poco::ByteOrder::fromNetwork(decltype(ch_id)(*(decltype(ch_id)*)(data_in.data() + offset)));
-  offset += sizeof(decltype(ch_id));
+  channel_id = Poco::ByteOrder::fromNetwork(decltype(channel_id)(*(decltype(channel_id)*)(data_in.data() + offset)));
+  offset += sizeof(decltype(channel_id));
   major_or_minor = decltype(major_or_minor)(*(decltype(major_or_minor)*)(data_in.data() + offset));
   offset += sizeof(decltype(major_or_minor));
   real_time_mode_or_not = decltype(real_time_mode_or_not)(*(decltype(real_time_mode_or_not)*)(data_in.data() + offset));
@@ -58,8 +58,8 @@ std::vector<char>& VDeviceId::toNetwork()
   int offset = 0;
   decltype(device_id)(*(decltype(device_id)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(device_id);
   offset += sizeof(decltype(device_id));
-  decltype(ch_id)(*(decltype(ch_id)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(ch_id);
-  offset += sizeof(decltype(ch_id));
+  decltype(channel_id)(*(decltype(channel_id)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(channel_id);
+  offset += sizeof(decltype(channel_id));
   decltype(major_or_minor)(*(decltype(major_or_minor)*)(data_out.data() + offset)) = major_or_minor;
   offset += sizeof(decltype(major_or_minor));
   decltype(real_time_mode_or_not)(*(decltype(real_time_mode_or_not)*)(data_out.data() + offset)) =
@@ -90,8 +90,8 @@ void VMediaFrame::fromNetwork(std::vector<char>& data_in)
   offset += sizeof(decltype(motion_available));
   stream_type = decltype(stream_type)(*(decltype(stream_type)*)(data_in.data() + offset));
   offset += sizeof(decltype(stream_type));
-  ch_id = decltype(ch_id)(*(decltype(ch_id)*)(data_in.data() + offset));
-  offset += sizeof(decltype(ch_id));
+  channel_id = decltype(channel_id)(*(decltype(channel_id)*)(data_in.data() + offset));
+  offset += sizeof(decltype(channel_id));
 }
 std::vector<char>& VMediaFrame::toNetwork()
 {
@@ -112,27 +112,28 @@ std::vector<char>& VMediaFrame::toNetwork()
   offset += sizeof(decltype(motion_available));
   decltype(stream_type)(*(decltype(stream_type)*)(data_out.data() + offset)) = stream_type;
   offset += sizeof(decltype(stream_type));
-  decltype(ch_id)(*(decltype(ch_id)*)(data_out.data() + offset)) = ch_id;
-  offset += sizeof(decltype(ch_id));
+  decltype(channel_id)(*(decltype(channel_id)*)(data_out.data() + offset)) = channel_id;
+  offset += sizeof(decltype(channel_id));
   return data_out;
 }
 VtplVmsStreamGrabberFrameSrc::VtplVmsStreamGrabberFrameSrc(std::string source_url, int device_id)
-  : _force_major_vms_stream(false), _force_minor_vms_stream(false)
+    : _force_major_vms_stream(false), _force_minor_vms_stream(false), _is_shutdown(false), _last_decoded_timestamp(0.0),
+      _last_fps(0.0), _is_already_shutting_down(false)
 {
   _get_remote_ip_port_channel(source_url);
   if (_force_major_vms_stream) {
-    std::cout << "Forcing major url for channel " << _ch_id << std::endl;
+    std::cout << "Forcing major url for channel " << _channel_id << std::endl;
     _major_minor = 0;
   }
   if (_force_major_vms_stream) {
-    std::cout << "Forcing minorr url for channel " << _ch_id << std::endl;
+    std::cout << "Forcing minorr url for channel " << _channel_id << std::endl;
     _major_minor = 1;
   }
-  std::cout << " _remote_ip: " << _remote_ip << " _remote_port: " << _remote_port << " _ch_id: " << _ch_id
+  std::cout << " _remote_ip: " << _remote_ip << " _remote_port: " << _remote_port << " _channel_id: " << _channel_id
             << " _major_minor: " << (uint16_t)_major_minor << std::endl;
-  _buff.resize(600*1024);
+  _buff.resize(600 * 1024);
   _buff2.resize(28);
-
+  _connect_to_vms();
 }
 VtplVmsStreamGrabberFrameSrc::~VtplVmsStreamGrabberFrameSrc() {}
 std::vector<std::string> split(std::string s, std::string delimiter)
@@ -163,6 +164,114 @@ void VtplVmsStreamGrabberFrameSrc::_get_remote_ip_port_channel(std::string& sour
   std::vector<std::string> l2 = split(l1.at(0), ":");
   _remote_ip = l2.at(0);
   _remote_port = std::stoi(l2.at(1));
-  _ch_id = (uint16_t)std::stoi(l1.at(1));
+  _channel_id = (uint16_t)std::stoi(l1.at(1));
   _major_minor = (uint8_t)std::stoi(l1.at(2));
+}
+double VtplVmsStreamGrabberFrameSrc::get(int a)
+{
+  switch (a) {
+  case 1:
+    return _last_decoded_timestamp;
+    break;
+  case 2:
+    return _last_fps;
+    break;
+  default:
+    break;
+  }
+  return 0;
+}
+void VtplVmsStreamGrabberFrameSrc::_connect_to_vms()
+{
+  try {
+    Poco::Net::SocketAddress address(_remote_ip, _remote_port);
+    _s.reset(new Poco::Net::StreamSocket());
+    _s->connect(address, Poco::Timespan(SOCKET_DEFAULT_TIMEOUT_SEC, 0));
+    _s->setReceiveTimeout(Poco::Timespan(SOCKET_DEFAULT_TIMEOUT_SEC, 0));
+    std::string host = _s->peerAddress().toString();
+
+    int send_size = sizeof(VDeviceId);
+    int count = _s->sendBytes(_v_device_id.toNetwork().data(), send_size);
+    if (count != send_size)
+      throw std::runtime_error("Send size does not match");
+    std::cout << "Success to connect ip " << _remote_ip << " port " << _remote_port << " channel id " << _channel_id
+              << std::endl;
+  } catch (const Poco::TimeoutException& e) {
+    std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+    _close();
+  } catch (const Poco::Net::NetException& e) {
+    std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+    _close();
+  }
+}
+bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
+{
+  bool ret = true;
+  // mat = None
+  // _time_out_in_sec;
+  const std::chrono::time_point<std::chrono::system_clock> entry_time = std::chrono::system_clock::now();
+
+  while (!_is_shutdown) {
+    std::chrono::time_point<std::chrono::system_clock> current_time = std::chrono::system_clock::now();
+    if (std::chrono::duration_cast<std::chrono::seconds>(current_time - entry_time).count() > _time_out_in_sec)
+      break;
+    if (read_data_n(*_s, _buff, 4) == false) {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      continue;
+    }
+    int32_t buff_len = Poco::ByteOrder::fromNetwork((int32_t)(*(int32_t*)_buff.data()));
+    if (buff_len <= 0) {
+      // std::cerr << __FILE__ << " : " << __LINE__ << " Zero length buffer received" << '\n';
+      continue;
+    } else if (buff_len > 10 * 1024 * 1024) {
+      std::cerr << __FILE__ << " : " << __LINE__ << "Too long encoded buffer received " << _remote_ip << " "
+                << _remote_port << " channel " << _channel_id << '\n';
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      continue;
+    } else {
+      if (buff_len > _buff.size()) { // low buffer
+        _buff.resize((buff_len / 32 + 1) * 32);
+      }
+      if (read_data_n(*_s, _buff, buff_len) == false) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        continue;
+      }
+      if (read_data_n(*_s, _buff2, 28) == false) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        continue;
+      }
+      VMediaFrame frame_info;
+      frame_info.fromNetwork(_buff2);
+      _last_decoded_timestamp = frame_info.time_stamp;
+    }
+  }
+
+  std::chrono::time_point<std::chrono::system_clock> current_time = std::chrono::system_clock::now();
+  // while (not self.__is_shutdown.is_set()) and (time.time() < (entry_time + time_out_in_sec)):
+
+  return false;
+}
+void VtplVmsStreamGrabberFrameSrc::_close()
+{
+  if (_s == nullptr)
+    return;
+  try {
+    _s->shutdown();
+  } catch (const Poco::Net::NetException& e) {
+    std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+  }
+  try {
+    _s->close();
+  } catch (const Poco::Net::NetException& e) {
+    std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+  }
+  _s = nullptr;
+}
+void VtplVmsStreamGrabberFrameSrc::release()
+{
+  if (_is_already_shutting_down)
+    return;
+  _is_already_shutting_down = true;
+  _is_shutdown = true;
+  _close();
 }
