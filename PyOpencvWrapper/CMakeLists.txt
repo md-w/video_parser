@@ -80,6 +80,7 @@ target_link_libraries(vtpl_ultraface
 )
 
 add_library(vtpl_video_stream STATIC
+    src/IVtplStreamFrameSrc.cpp
     src/VtplVideoStream.cpp
     src/VtplVmsStreamGrabberFrameSrc.cpp
     src/Decoder.cpp
@@ -91,6 +92,7 @@ target_include_directories(vtpl_video_stream
 
 target_link_libraries(vtpl_video_stream
     PUBLIC Poco::Net
+    PUBLIC utils
 )
 
 add_executable(vtpl_video_stream_tester
@@ -99,6 +101,7 @@ add_executable(vtpl_video_stream_tester
 
 target_link_libraries(vtpl_video_stream_tester
     PUBLIC vtpl_video_stream
+    PUBLIC utils
 )
 
 add_library(OpencvWrapper SHARED

@@ -125,5 +125,24 @@ cd cmake-build-dlib
 cmake -DDLIB_USE_CUDA=OFF -DCMAKE_INSTALL_PREFIX="./../install" "../dlib" -G"Visual Studio 16 2019" -A x64
 cmake --build . --config Release --target install --parallel 12
 
+cd ..
+git  clone --depth 1 --origin "v1.9.2" "https://github.com/gabime/spdlog.git"
+mkdir cmake-build-spdlog
+cd cmake-build-spdlog
+cmake -DCMAKE_INSTALL_PREFIX="./../install" "../spdlog" -G"Visual Studio 16 2019" -A x64
+cmake --build . --config Release --target install
+cmake -DCMAKE_INSTALL_PREFIX="./../install_debug" "../spdlog" -G"Visual Studio 16 2019" -A x64
+cmake --build . --config Debug --target install
+
+cd ..
+git  clone --depth 1 --origin "lts_2021_03_24" "https://github.com/abseil/abseil-cpp.git"
+mkdir cmake-build-abseil
+cd cmake-build-abseil
+
+cmake -DCMAKE_INSTALL_PREFIX="./../install" -DABSL_ENABLE_INSTALL=ON "../abseil-cpp" -G"Visual Studio 16 2019" -A x64
+cmake --build . --config Release --target install
+cmake -DCMAKE_INSTALL_PREFIX="./../install_debug" -DABSL_ENABLE_INSTALL=ON "../abseil-cpp" -G"Visual Studio 16 2019" -A x64
+cmake --build . --config Debug --target install
+
 
 cmake ..  -G"Visual Studio 16 2019" -A x64 -DONNXRUNTIME_ROOTDIR=D:\WorkFiles\RnD\video_parser\thirdparty\install
