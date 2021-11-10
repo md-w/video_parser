@@ -48,6 +48,18 @@ void VtplVideoStream::_do_task()
       break;
     if (_stream == nullptr)
       continue;
+    if (!_q.full())
+    {
+      int write_idx = _q.getWriteIdx();
+      VtplVideoFrame* frame = _q.getWritable(write_idx);
+    }
+    std::vector<uint8_t> data;
+    if (_stream->read(data)) {
+      // put in the q
+    } else {
+      _is_shutdown = true;
+      break;
+    }
   }
 
   _release();
@@ -75,12 +87,13 @@ void VtplVideoStream::_reconnect()
   _release();
   int time_out_in_sec = _reconnect_retry_time;
   const std::chrono::time_point<std::chrono::system_clock> entry_time = std::chrono::system_clock::now();
-
   while (!_is_shutdown) {
     std::chrono::time_point<std::chrono::system_clock> current_time = std::chrono::system_clock::now();
     if (std::chrono::duration_cast<std::chrono::seconds>(current_time - entry_time).count() > time_out_in_sec)
       break;
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
+  if (!_is_shutdown && !_stream_url.empty()) {
     RAY_LOG(INFO) << fmt::format("reconnect_retry_time {}", _reconnect_retry_time);
     _reconnect_retry_time = 10;
     if (_stream_type.find("vms") != std::string::npos) {

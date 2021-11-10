@@ -2,6 +2,8 @@
 #ifndef VtplVideoStream_h
 #define VtplVideoStream_h
 #include "IVtplStreamFrameSrc.h"
+#include "VtplVideoFrame.h"
+#include "zero_copy_queue.h"
 #include <atomic>
 #include <memory>
 #include <string>
@@ -12,8 +14,10 @@ class VtplVideoStream
 private:
   std::string _stream_type;
   std::string _stream_url;
+
   uint16_t _channel_id;
   uint16_t _app_id;
+
   bool _reconnect_requested;
   bool _is_already_shutting_down = false;
   std::atomic_bool _is_shutdown = false;
@@ -21,8 +25,10 @@ private:
   int _reconnect_retry_time = 1;
   float _suggested_fps = 25.0;
   int _consecutive_grabbing_error = 0;
+
   std::unique_ptr<std::thread> _thread;
   std::unique_ptr<IVtplStreamFrameSrc> _stream;
+  zero_copy_queue<VtplVideoFrame, 5> _q;
 
   void _get_stream_url(std::string& path);
   void _release();

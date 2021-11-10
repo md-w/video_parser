@@ -1,4 +1,5 @@
 #include "VtplVmsStreamGrabberFrameSrc.h"
+#include "VReturnStatus.h"
 #include <Poco/ByteOrder.h>
 #include <Poco/Net/NetException.h>
 #include <chrono>
@@ -14,7 +15,7 @@ bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int 
     int x = bytes_to_read - length;
     if (x > 0) {
       try {
-        int length_received = s.receiveBytes(&data_array[0], x);
+        int length_received = s.receiveBytes(data_array.data(), x);
         if (length_received <= 0) {
           std::string host = s.peerAddress().toString();
           std::cout << "host: " << host << " s.getReceiveBufferSize() " << s.getReceiveBufferSize() << std::endl;
@@ -252,12 +253,73 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
       VMediaFrame frame_info;
       frame_info.fromNetwork(_buff2);
       _last_decoded_timestamp = frame_info.time_stamp;
-      std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
-                << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
-                << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
-                << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
-                << frame_info.time_stamp << std::endl;
+      // std::cout << " size: " << _buff.size() << " buff_len: " << buff_len << std::endl;
 
+      // std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
+      //           << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
+      //           << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
+      //           << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
+      //           << frame_info.time_stamp << " frame_info.stream_type " << (int)frame_info.stream_type << std::endl;
+
+      if (!(((Codec_Type)frame_info.media_type == Codec_Type::H264) ||
+            ((Codec_Type)frame_info.media_type == Codec_Type::H265))) {
+        continue;
+      }
+      if (_decoder_data_space == nullptr) {
+        if (!(initDecoder(&_decoder_data_space, (Codec_Type)frame_info.media_type, ARGB) == 0)) {
+          continue;
+        } else {
+          if (_rgb_buffer == nullptr) {
+            _rgb_buffer = (unsigned char*)malloc(_rgb_width * _rgb_height * 4);
+          }
+        }
+      }
+      if (_decoder_data_space == nullptr) {
+        continue;
+      }
+
+      int tempRgbWidth = _rgb_width;
+      int tempRgbHeight = _rgb_height;
+      while (true) {
+        // int rs = decodeFrameGetGPUPoiner(decoderDataSpace, buffer,
+        // readLen,
+        //                                  &rgbBuffGPUPtr, &tempRgbWidth,
+        //                                  &tempRgbHeight, frame.timeStamp,
+        //                                  &outTimeStamp, frame.frameType);
+
+        int rs = decodeFrame(_decoder_data_space, (unsigned char*)_buff.data(), buff_len, _rgb_buffer, &tempRgbWidth,
+                             &tempRgbHeight);
+        if (rs == VA_LOWBUFFERSIZE) {
+          if (_rgb_buffer)
+            free(_rgb_buffer);
+          _rgb_width = tempRgbWidth;
+          _rgb_height = tempRgbHeight;
+          _rgb_buffer = (unsigned char*)malloc(_rgb_width * _rgb_height * 4);
+        } else if (rs == VA_SUCCESS) {
+          // printf("thread=====%d\n", std::this_thread::get_id());
+          // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          // char op[250] = {
+          //     0,
+          // };
+          // sprintf(op, "./dump_1/%05d_%05llu.ppm", frame_count,
+          //         outTimeStamp);
+          // writePPMFromBgra(rgbBuffer, rgbHeight, rgbWidth, op);
+          // printf("\n[%d] Success", frame_count);
+          // cv::Mat inMat = cv::Mat(rgbHeight, rgbWidth, CV_8UC4, (unsigned char*)rgbBuffer);
+          // cv::Mat frame;
+          // cv::cvtColor(inMat, frame, cv::ColorConversionCodes::COLOR_BGRA2BGR);
+          // ultraface.getResult(frame);
+          // cv::namedWindow("vtpl_opencv", cv::WINDOW_NORMAL);
+          // cv::imshow("vtpl_opencv", frame);
+          // cv::waitKey(1);
+          break;
+        } else {
+          // printf("\n[%d] Error\n", i);
+          break;
+        }
+      }
+
+      long long outTimeStamp = 0;
       ret = true;
     }
   }
@@ -291,4 +353,14 @@ void VtplVmsStreamGrabberFrameSrc::release()
   _is_already_shutting_down = true;
   _is_shutdown = true;
   _close();
+  if (_rgb_buffer)
+    free(_rgb_buffer);
+
+  if (_decoder_data_space) {
+    freeDecoder(_decoder_data_space);
+    _decoder_data_space = nullptr;
+  }
+  if (_rgb_buffer) {
+    free(_rgb_buffer);
+  }
 }

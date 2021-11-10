@@ -1,6 +1,7 @@
 #pragma once
 #ifndef VtplVmsStreamGrabberFrameSrc_h
 #define VtplVmsStreamGrabberFrameSrc_h
+#include "CodecManager.h"
 #include "IVtplStreamFrameSrc.h"
 #include <Poco/Net/StreamSocket.h>
 #include <atomic>
@@ -9,7 +10,7 @@
 #include <string>
 #include <vector>
 
-class VtplVmsStreamGrabberFrameSrc: public IVtplStreamFrameSrc
+class VtplVmsStreamGrabberFrameSrc : public IVtplStreamFrameSrc
 {
 private:
   bool _force_major_vms_stream;
@@ -27,6 +28,14 @@ private:
   std::unique_ptr<Poco::Net::StreamSocket> _s;
   bool _is_already_shutting_down = false;
   std::atomic_bool _is_shutdown = false;
+
+
+
+  void* _decoder_data_space = nullptr;
+  int _rgb_width = 1920;
+  int _rgb_height = 1080;
+  unsigned char* _rgb_buffer = nullptr;
+
   void _get_remote_ip_port_channel(std::string& source_url);
   void _connect_to_vms();
   void _close();

@@ -84,6 +84,8 @@ add_library(vtpl_video_stream STATIC
     src/VtplVideoStream.cpp
     src/VtplVmsStreamGrabberFrameSrc.cpp
     src/Decoder.cpp
+    src/VtplVideoFrame.cpp
+    src/CodecManager.cpp
 )
 
 target_include_directories(vtpl_video_stream

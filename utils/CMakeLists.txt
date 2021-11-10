@@ -3,7 +3,8 @@ find_package(spdlog PATHS ${CMAKE_SOURCE_DIR}/thirdparty/install_debug)
 
 add_library(utils STATIC
     src/filesystem.cpp
-    src/logging.cpp)
+    src/logging.cpp
+    inc/threadsafe_queue.h)
 
 target_include_directories(utils
     PUBLIC inc)
