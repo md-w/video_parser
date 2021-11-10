@@ -11,4 +11,4 @@ target_include_directories(utils
 target_link_libraries(utils
     PUBLIC absl::debugging
     PUBLIC absl::failure_signal_handler
-    PUBLIC spdlog)
+    PUBLIC spdlog::spdlog)

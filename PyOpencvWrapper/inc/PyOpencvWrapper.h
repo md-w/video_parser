@@ -61,7 +61,8 @@ class VP_API PyOpencvWrapper
 private:
   std::vector<AnalyticsEventHandlerCallback> analytics_event_handlers;
   std::unique_ptr<UltraFace> ultra_face;
-  public : PyOpencvWrapper();
+  public :
+  PyOpencvWrapper();
   ~PyOpencvWrapper();
   void AnalyticsEventHandler(AnalyticsEventHandlerCallback callback);
   void Call(AnalyticsEventHandlerInput& image);

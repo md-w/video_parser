@@ -28,7 +28,7 @@ private:
 
   std::unique_ptr<std::thread> _thread;
   std::unique_ptr<IVtplStreamFrameSrc> _stream;
-  zero_copy_queue<VtplVideoFrame, 5> _q;
+  zero_copy_queue<VtplVideoFrame, 4> _q;
 
   void _get_stream_url(std::string& path);
   void _release();

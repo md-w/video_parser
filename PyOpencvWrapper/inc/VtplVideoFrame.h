@@ -19,22 +19,7 @@ public:
   bool is_first_frame;
   bool is_end_of_stream;
   uint8_t* rgb_buffer;
-  bool updateWidthHeight(int32_t w, int32_t h)
-  {
-    if ((w * h * 4) == (width * height * 4)) {
-      if (rgb_buffer != nullptr)
-        return true;
-    }
-    if (rgb_buffer) {
-      std::free(rgb_buffer);
-    }
-    int pitch = ((w * 4) / 64 + 1) * 64;
-    rgb_buffer = static_cast<uint8_t*>(std::malloc(pitch * h));
-    width = w;
-    height = h;
-    return (rgb_buffer != nullptr);
-  }
-
+  bool updateWidthHeight(int32_t w, int32_t h);
   VtplVideoFrame();
   ~VtplVideoFrame();
 };
