@@ -107,6 +107,7 @@ add_executable(vtpl_video_stream_tester
 target_link_libraries(vtpl_video_stream_tester
     PUBLIC vtpl_video_stream
     PUBLIC utils
+    PUBLIC Poco::Util
 )
 
 add_library(OpencvWrapper SHARED
