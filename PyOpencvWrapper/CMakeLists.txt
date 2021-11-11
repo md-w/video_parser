@@ -96,6 +96,7 @@ target_include_directories(vtpl_video_stream
 
 target_link_libraries(vtpl_video_stream
     PUBLIC Poco::Net
+    PUBLIC ${OpenCV_LIBS}
     PUBLIC utils
 )
 

@@ -1,8 +1,13 @@
 #include "VtplVideoFrame.h"
 #include <iostream>
+#include <opencv2/opencv.hpp>
 
 bool VtplVideoFrame::updateWidthHeight(int32_t w, int32_t h)
 {
+  cv::Mat img = cv::imread("test.jpg");
+  w = img.cols;
+  h = img.rows;
+
   if ((w * h * 4) == (width * height * 4)) {
     if (rgb_buffer != nullptr)
       return true;
@@ -10,15 +15,13 @@ bool VtplVideoFrame::updateWidthHeight(int32_t w, int32_t h)
   if (rgb_buffer) {
     std::free(rgb_buffer);
   }
+
   int pitch = ((w * 4) / 64 + 1) * 64;
   rgb_buffer = static_cast<uint8_t*>(std::malloc(pitch * h));
   width = w;
   height = h;
-  for (size_t i = 0; i < width; i++)
-  {
-    rgb_buffer[i] = i;
-  }
-
+  cv::Mat out_mat = cv::Mat(h, w, CV_8UC4, (unsigned char*)rgb_buffer);
+  cv::cvtColor(img, out_mat, cv::COLOR_BGR2BGRA);
   return (rgb_buffer != nullptr);
 }
 
