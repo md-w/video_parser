@@ -48,14 +48,24 @@ PYBIND11_MODULE(PyOpencvWrapper, m)
 
   py::class_<VtplVideoFrame>(m, "VtplVideoFrame", py::buffer_protocol())
       .def(py::init<>())
+      .def_readonly("channel_id", &VtplVideoFrame::channel_id)
+      .def_readonly("app_id",&VtplVideoFrame::app_id)
+      .def_readonly("frame_id", &VtplVideoFrame::frame_id)
+      .def_readonly("time_stamp",&VtplVideoFrame::time_stamp)
+      .def_readonly("fps", &VtplVideoFrame::fps)
+      .def_readonly("width", &VtplVideoFrame::width)
+      .def_readonly("height", &VtplVideoFrame::height)
+      .def_readonly("is_first_frame", &VtplVideoFrame::is_first_frame)
+      .def_readonly("is_end_of_stream", &VtplVideoFrame::is_end_of_stream)
       .def_buffer([](VtplVideoFrame& f) -> py::buffer_info {
         return py::buffer_info(f.data(),                                 /* Pointer to buffer */
                                sizeof(uint8_t),                          /* Size of one scalar */
                                py::format_descriptor<uint8_t>::format(), /* Python struct-style format descriptor */
                                3,                                        /* Number of dimensions */
                                {f.rows(), f.cols(), 4},                     /* Buffer dimensions */
-                               {sizeof(uint8_t) * f.cols(),          /* Strides (in bytes) for each index */
-                                sizeof(uint8_t) * f.rows()});
+                               {sizeof(uint8_t) * f.cols() * 4,          /* Strides (in bytes) for each index */
+                                sizeof(uint8_t) * 4,
+                                sizeof(uint8_t) * 1});
       });
 }
 #endif
