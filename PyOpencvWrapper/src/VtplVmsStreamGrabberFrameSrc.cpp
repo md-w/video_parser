@@ -253,12 +253,13 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
       _last_decoded_timestamp = frame_info.time_stamp;
       // std::cout << " size: " << _buff.size() << " buff_len: " << buff_len << std::endl;
 
-      // std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
-      //           << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
-      //           << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
-      //           << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
-      //           << frame_info.time_stamp << " frame_info.stream_type " << (int)frame_info.stream_type << std::endl;
+      std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
+                << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
+                << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
+                << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
+                << frame_info.time_stamp << " frame_info.stream_type " << (int)frame_info.stream_type << std::endl;
 
+#if 0
       if (!(((Codec_Type)frame_info.media_type == Codec_Type::H264) ||
             ((Codec_Type)frame_info.media_type == Codec_Type::H265))) {
         continue;
@@ -315,8 +316,8 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
           // printf("\n[%d] Error\n", i);
           break;
         }
-      }
-
+     }
+#endif
       long long outTimeStamp = 0;
       ret = true;
     }

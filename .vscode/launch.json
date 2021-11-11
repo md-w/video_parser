@@ -9,11 +9,39 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_video_stream_tester.exe",
+            "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
             "environment": [],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "windows": {
+                "type": "cppvsdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/PyOpencvWrapper/Debug/vtpl_video_stream_tester.exe",
+                "cwd": "${workspaceFolder}/build/PyOpencvWrapper/Debug/",
+                "args": [],
+                "stopAtEntry": false,
+                "environment": [],
+                "console": "integratedTerminal",
+            },
+            "linux": {
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceFolder}/build/PyOpencvWrapper/vtpl_video_stream_tester",
+                "cwd": "${workspaceFolder}/build/PyOpencvWrapper/",
+                "args": [],
+                "stopAtEntry": false,
+                "environment": [],
+                "console": "integratedTerminal",
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
         },
         {
             "name": "Opencv_UltraFace",
