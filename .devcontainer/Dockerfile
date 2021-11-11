@@ -12,6 +12,10 @@ ENV SHELL /bin/bash
 
 RUN pip3 install -U pip
 RUN pip3 install numpy
+RUN pip3 install virtualenv
+RUN pip3 install black pylint pytest yapf
+# RUN pip3 install numpy opencv-python
+RUN pip install ruamel.yaml
 
 RUN mkdir opencv_build && cd opencv_build && \
     git clone --depth 1 --origin "4.5.4" https://github.com/opencv/opencv_contrib && \
@@ -75,10 +79,32 @@ RUN mkdir onnxruntime_build && cd onnxruntime_build && \
     cd ../.. && \
     rm -rf onnxruntime_build
 
-RUN pip3 install virtualenv
-RUN pip3 install black pylint pytest yapf
-# RUN pip3 install numpy opencv-python
-RUN pip install ruamel.yaml
+RUN mkdir poco_build && cd poco_build && \
+    git clone --depth 1 --origin "poco-serial-1.11.0-release" --recursive https://github.com/vtpl1/poco.git && \
+    mkdir cmake-build && cd cmake-build && \
+    cmake -DBUILD_SHARED_LIBS=NO \
+        "../poco" -G"Ninja" && \
+        cmake --build . --config Release --target install && \
+        cd ../.. && \
+        rm -rf poco_build
+
+RUN mkdir spdlog_build && cd spdlog_build && \
+    git clone --depth 1 --origin "v1.9.2" --recursive https://github.com/gabime/spdlog.git && \
+    mkdir cmake-build && cd cmake-build && \
+    cmake -DBUILD_SHARED_LIBS=NO \
+        "../spdlog" -G"Ninja" && \
+        cmake --build . --config Release --target install && \
+        cd ../.. && \
+        rm -rf spdlog_build
+
+RUN mkdir abseil_build && cd abseil_build && \
+    git clone --depth 1 --origin "lts_2021_03_24" --recursive https://github.com/abseil/abseil-cpp.git && \
+    mkdir cmake-build && cd cmake-build && \
+    cmake -DABSL_ENABLE_INSTALL=ON \
+        "../abseil-cpp" -G"Ninja" && \
+        cmake --build . --config Release --target install && \
+        cd ../.. && \
+        rm -rf abseil_build
 
 ARG USERNAME=vscode
 ARG USER_UID=1000

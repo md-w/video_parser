@@ -1,5 +1,5 @@
 git  clone --depth 1 --origin "poco-serial-1.11.0-release" "https://github.com/vtpl1/poco.git"
-mkdir install
+mkdir install_debug
 mkdir cmake-build-poco
 cd cmake-build-poco
 cmake -DBUILD_SHARED_LIBS=NO -DCMAKE_INSTALL_PREFIX="./../install" "../poco" -G"Visual Studio 16 2019" -A x64
