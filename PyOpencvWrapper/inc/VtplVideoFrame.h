@@ -19,6 +19,9 @@ public:
   bool is_first_frame;
   bool is_end_of_stream;
   uint8_t* rgb_buffer;
+  uint8_t *data();
+  int rows();
+  int cols();
   bool updateWidthHeight(int32_t w, int32_t h);
   VtplVideoFrame();
   ~VtplVideoFrame();

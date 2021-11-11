@@ -14,8 +14,17 @@ bool VtplVideoFrame::updateWidthHeight(int32_t w, int32_t h)
   rgb_buffer = static_cast<uint8_t*>(std::malloc(pitch * h));
   width = w;
   height = h;
+  for (size_t i = 0; i < width; i++)
+  {
+    rgb_buffer[i] = i;
+  }
+
   return (rgb_buffer != nullptr);
 }
+
+uint8_t* VtplVideoFrame::data() { return rgb_buffer; }
+int VtplVideoFrame::rows() { return height; }
+int VtplVideoFrame::cols() { return width; }
 
 VtplVideoFrame::VtplVideoFrame()
     : channel_id(0), app_id(0), frame_id(0), time_stamp(0), fps(0.0), width(1920), height(1080), is_first_frame(false),

@@ -52,11 +52,18 @@ def on_analytics_event(in_val: int) -> int:
     return in_val + 12
 
 
-py_opencv_wrapper = pw.PyOpencvWrapper()
-py_opencv_wrapper.analytics_event_handler(on_analytics_event)
+# py_opencv_wrapper = pw.PyOpencvWrapper()
+# py_opencv_wrapper.analytics_event_handler(on_analytics_event)
 
-image = np.ndarray(shape=(2), dtype=np.uint8)
-py_opencv_wrapper.call(image)
+# image = np.ndarray(shape=(2), dtype=np.uint8)
+# py_opencv_wrapper.call(image)
 # test_async_callbacks()
 # print(help(pvp))
-time.sleep(10)
+# time.sleep(10)
+
+py_vtpl_video_frame = pw.VtplVideoFrame()
+mat2 = np.array(py_vtpl_video_frame, dtype=np.ubyte, copy=False)
+print(mat2)
+array = np.ones((100,100,4))
+print(array.ndim)
+print(array.strides)

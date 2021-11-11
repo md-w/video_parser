@@ -1,4 +1,5 @@
 #include "PyOpencvWrapper.h"
+#include "VtplVideoFrame.h"
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -9,12 +10,8 @@ PyOpencvWrapper::PyOpencvWrapper()
   ultra_face.reset(new UltraFace());
   std::cout << "PyOpencvWrapper constructor" << std::endl;
 }
-PyOpencvWrapper::~PyOpencvWrapper()
-{
-  std::cout << "PyOpencvWrapper destructor" << std::endl;
-}
-void PyOpencvWrapper::AnalyticsEventHandler(
-    AnalyticsEventHandlerCallback callback)
+PyOpencvWrapper::~PyOpencvWrapper() { std::cout << "PyOpencvWrapper destructor" << std::endl; }
+void PyOpencvWrapper::AnalyticsEventHandler(AnalyticsEventHandlerCallback callback)
 {
   std::cout << "PyOpencvWrapper AnalyticsEventHandler" << std::endl;
 
@@ -23,18 +20,17 @@ void PyOpencvWrapper::AnalyticsEventHandler(
 void PyOpencvWrapper::Call(AnalyticsEventHandlerInput& image)
 {
   std::vector<uint8_t> temp;
-  for (size_t i = 0; i < 10; i++)
-  {
+  for (size_t i = 0; i < 10; i++) {
     temp.push_back(i);
   }
 
   for (auto&& analytics_event_handler : analytics_event_handlers) {
     image.resize({10}, false);
 #ifdef GENERATE_PYTHON_BINDINGS
-      //memcpy(image.mutable_data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
-      memcpy(image.mutable_data(), temp.data(), 10);
+    // memcpy(image.mutable_data(), elementaryVideo->GetDataAs<void>(), elementaryVideo->GetRawMemSize());
+    memcpy(image.mutable_data(), temp.data(), 10);
 #else
-      memcpy(image.data(), temp.data(), 10);
+    memcpy(image.data(), temp.data(), 10);
 #endif
     analytics_event_handler(image);
   }
@@ -49,5 +45,17 @@ PYBIND11_MODULE(PyOpencvWrapper, m)
       .def(py::init())
       .def("analytics_event_handler", &PyOpencvWrapper::AnalyticsEventHandler)
       .def("call", &PyOpencvWrapper::Call);
+
+  py::class_<VtplVideoFrame>(m, "VtplVideoFrame", py::buffer_protocol())
+      .def(py::init<>())
+      .def_buffer([](VtplVideoFrame& f) -> py::buffer_info {
+        return py::buffer_info(f.data(),                                 /* Pointer to buffer */
+                               sizeof(uint8_t),                          /* Size of one scalar */
+                               py::format_descriptor<uint8_t>::format(), /* Python struct-style format descriptor */
+                               3,                                        /* Number of dimensions */
+                               {f.rows(), f.cols(), 4},                     /* Buffer dimensions */
+                               {sizeof(uint8_t) * f.cols(),          /* Strides (in bytes) for each index */
+                                sizeof(uint8_t) * f.rows()});
+      });
 }
 #endif
