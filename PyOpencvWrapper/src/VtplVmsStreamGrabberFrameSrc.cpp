@@ -4,7 +4,7 @@
 #include <Poco/Net/NetException.h>
 #include <chrono>
 #include <thread>
-bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int bytes_to_read)
+bool read_data_n(Poco::Net::StreamSocket& s, std::vector<uint8_t>& data_array, int bytes_to_read)
 {
   int length = 0;
   if (bytes_to_read > data_array.size()) {
@@ -17,14 +17,20 @@ bool read_data_n(Poco::Net::StreamSocket& s, std::vector<char>& data_array, int 
       try {
         int length_received = s.receiveBytes(data_array.data(), x);
         if (length_received <= 0) {
-          std::string host = s.peerAddress().toString();
-          std::cout << "host: " << host << " s.getReceiveBufferSize() " << s.getReceiveBufferSize() << std::endl;
+          // std::string host = s.peerAddress().toString();
+          // std::cout << "host: " << host << " s.getReceiveBufferSize() " << s.getReceiveBufferSize() << std::endl;
           break;
         }
         length += length_received;
       } catch (const Poco::TimeoutException& e) {
         break;
       } catch (const Poco::Net::NetException& e) {
+        std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+        break;
+      } catch (const Poco::IOException& e) {
+        std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
+        break;
+      } catch (const std::exception& e) {
         std::cerr << __FILE__ << " : " << __LINE__ << " " << e.what() << '\n';
         break;
       }
@@ -44,7 +50,7 @@ VDeviceId::VDeviceId(int32_t _device_id, int16_t _channel_id, uint8_t _major_or_
   data_out.resize(sizeof(VDeviceId));
 }
 VDeviceId::~VDeviceId() {}
-void VDeviceId::fromNetwork(std::vector<char>& data_in)
+void VDeviceId::fromNetwork(std::vector<uint8_t>& data_in)
 {
   int offset = 0;
   device_id = Poco::ByteOrder::fromNetwork(decltype(device_id)(*(decltype(device_id)*)(data_in.data() + offset)));
@@ -59,7 +65,7 @@ void VDeviceId::fromNetwork(std::vector<char>& data_in)
       decltype(decoder_initialized_or_not)(*(decltype(decoder_initialized_or_not)*)(data_in.data() + offset));
   offset += sizeof(decltype(decoder_initialized_or_not));
 }
-std::vector<char>& VDeviceId::toNetwork()
+std::vector<uint8_t>& VDeviceId::toNetwork()
 {
 
   int offset = 0;
@@ -77,7 +83,7 @@ std::vector<char>& VDeviceId::toNetwork()
 }
 VMediaFrame::VMediaFrame() { data_out.resize(sizeof(VMediaFrame)); }
 VMediaFrame::~VMediaFrame() {}
-void VMediaFrame::fromNetwork(std::vector<char>& data_in)
+void VMediaFrame::fromNetwork(std::vector<uint8_t>& data_in)
 {
   int offset = 0;
   media_type = Poco::ByteOrder::fromNetwork(decltype(media_type)(*(decltype(media_type)*)(data_in.data() + offset)));
@@ -98,7 +104,7 @@ void VMediaFrame::fromNetwork(std::vector<char>& data_in)
   channel_id = Poco::ByteOrder::fromNetwork(decltype(channel_id)(*(decltype(channel_id)*)(data_in.data() + offset)));
   offset += sizeof(decltype(channel_id));
 }
-std::vector<char>& VMediaFrame::toNetwork()
+std::vector<uint8_t>& VMediaFrame::toNetwork()
 {
 
   int offset = 0;
@@ -142,8 +148,13 @@ VtplVmsStreamGrabberFrameSrc::VtplVmsStreamGrabberFrameSrc(std::string source_ur
   _buff.resize(600 * 1024);
   _buff2.resize(28);
   _connect_to_vms();
+
+  // bin_file.open("encrypted_buffer.264", std::ios::out | std::ios::binary);
+  pFile = fopen("33.264", "wb");
 }
+
 VtplVmsStreamGrabberFrameSrc::~VtplVmsStreamGrabberFrameSrc() {}
+
 std::vector<std::string> split(std::string s, std::string delimiter)
 {
   size_t pos_start = 0, pos_end, delim_len = delimiter.length();
@@ -164,6 +175,7 @@ std::vector<std::string> split(std::string s, std::string delimiter)
  * @param source_url
  * @throws std::out_of_range out of range exception
  */
+
 void VtplVmsStreamGrabberFrameSrc::_get_remote_ip_port_channel(std::string& source_url)
 {
   std::vector<std::string> l = split(source_url, "://");
@@ -175,6 +187,7 @@ void VtplVmsStreamGrabberFrameSrc::_get_remote_ip_port_channel(std::string& sour
   _channel_id = (uint16_t)std::stoi(l1.at(1));
   _major_minor = (uint8_t)std::stoi(l1.at(2));
 }
+
 double VtplVmsStreamGrabberFrameSrc::get(int a)
 {
   switch (a) {
@@ -189,6 +202,7 @@ double VtplVmsStreamGrabberFrameSrc::get(int a)
   }
   return 0;
 }
+
 void VtplVmsStreamGrabberFrameSrc::_connect_to_vms()
 {
   try {
@@ -212,6 +226,7 @@ void VtplVmsStreamGrabberFrameSrc::_connect_to_vms()
     _close();
   }
 }
+
 bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
 {
   bool ret = false;
@@ -224,7 +239,7 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
     if (std::chrono::duration_cast<std::chrono::seconds>(current_time - entry_time).count() > _time_out_in_sec)
       break;
     if (read_data_n(*_s, _buff, 4) == false) {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      // std::this_thread::sleep_for(std::chrono::seconds(1));
       continue;
     }
     int32_t buff_len = Poco::ByteOrder::fromNetwork((int32_t)(*(int32_t*)_buff.data()));
@@ -241,11 +256,11 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
         _buff.resize((buff_len / 32 + 1) * 32);
       }
       if (read_data_n(*_s, _buff, buff_len) == false) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;
       }
       if (read_data_n(*_s, _buff2, 28) == false) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;
       }
       VMediaFrame frame_info;
@@ -253,17 +268,22 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
       _last_decoded_timestamp = frame_info.time_stamp;
       // std::cout << " size: " << _buff.size() << " buff_len: " << buff_len << std::endl;
 
-      std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
-                << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
-                << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
-                << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
-                << frame_info.time_stamp << " frame_info.stream_type " << (int)frame_info.stream_type << std::endl;
+      // std::cout << "frame_info.channel_id " << (int)frame_info.channel_id << "frame_info.media_type "
+      //           << (int)frame_info.media_type << "frame_info.frame_type " << (int)frame_info.frame_type
+      //           << "frame_info.fps " << (int)frame_info.fps << "frame_info.bit_rate " << (int)frame_info.bit_rate
+      //           << "frame_info.motion_available " << (int)frame_info.motion_available << " frame_info.time_stamp "
+      //           << frame_info.time_stamp << " frame_info.stream_type " << (int)frame_info.stream_type << std::endl;
 
-#if 0
       if (!(((Codec_Type)frame_info.media_type == Codec_Type::H264) ||
             ((Codec_Type)frame_info.media_type == Codec_Type::H265))) {
         continue;
       }
+      std::cout << "buff_len: " << buff_len << std::endl;
+      // bin_file.write(reinterpret_cast<const char*>(_buff.data()), buff_len);
+      // bin_file.flush();
+      fwrite(_buff.data(), sizeof(uint8_t), buff_len, pFile);
+      fflush(pFile);
+#if 0
       if (_decoder_data_space == nullptr) {
         if (!(initDecoder(&_decoder_data_space, (Codec_Type)frame_info.media_type, ARGB) == 0)) {
           continue;
@@ -320,6 +340,7 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
 #endif
       long long outTimeStamp = 0;
       ret = true;
+      break;
     }
   }
   return ret;
@@ -351,15 +372,23 @@ void VtplVmsStreamGrabberFrameSrc::release()
     return;
   _is_already_shutting_down = true;
   _is_shutdown = true;
+  std::cout << "Closing file" << std::endl;
+  // bin_file.close();
+  if (pFile) {
+    fclose(pFile);
+    pFile = NULL;
+  }
+  std::cout << "File closed" << std::endl;
   _close();
-  if (_rgb_buffer)
+  std::cout << "Here 2" << std::endl;
+  if (_rgb_buffer) {
     free(_rgb_buffer);
-
+    _rgb_buffer = nullptr;
+  }
+  std::cout << "Here 3" << std::endl;
   if (_decoder_data_space) {
     freeDecoder(_decoder_data_space);
     _decoder_data_space = nullptr;
   }
-  if (_rgb_buffer) {
-    free(_rgb_buffer);
-  }
+  std::cout << "Here 4" << std::endl;
 }

@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <fstream>
 
 class VtplVmsStreamGrabberFrameSrc : public IVtplStreamFrameSrc
 {
@@ -20,8 +21,8 @@ private:
   uint32_t _remote_port;
   uint16_t _channel_id;
   uint8_t _major_minor;
-  std::vector<char> _buff;
-  std::vector<char> _buff2;
+  std::vector<uint8_t> _buff;
+  std::vector<uint8_t> _buff2;
   double _last_decoded_timestamp;
   double _last_fps;
   int _time_out_in_sec = 20;
@@ -35,6 +36,9 @@ private:
   int _rgb_width = 1920;
   int _rgb_height = 1080;
   unsigned char* _rgb_buffer = nullptr;
+
+  std::ofstream bin_file;
+  FILE * pFile = NULL;
 
   void _get_remote_ip_port_channel(std::string& source_url);
   void _connect_to_vms();

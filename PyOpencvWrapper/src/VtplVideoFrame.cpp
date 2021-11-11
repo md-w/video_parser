@@ -4,9 +4,9 @@
 
 bool VtplVideoFrame::updateWidthHeight(int32_t w, int32_t h)
 {
-  cv::Mat img = cv::imread("test.jpg");
-  w = img.cols;
-  h = img.rows;
+  // cv::Mat img = cv::imread("test.jpg");
+  // w = img.cols;
+  // h = img.rows;
 
   if ((w * h * 4) == (width * height * 4)) {
     if (rgb_buffer != nullptr)
@@ -20,8 +20,8 @@ bool VtplVideoFrame::updateWidthHeight(int32_t w, int32_t h)
   rgb_buffer = static_cast<uint8_t*>(std::malloc(pitch * h));
   width = w;
   height = h;
-  cv::Mat out_mat = cv::Mat(h, w, CV_8UC4, (unsigned char*)rgb_buffer);
-  cv::cvtColor(img, out_mat, cv::COLOR_BGR2BGRA);
+  // cv::Mat out_mat = cv::Mat(h, w, CV_8UC4, (unsigned char*)rgb_buffer);
+  // cv::cvtColor(img, out_mat, cv::COLOR_BGR2BGRA);
   return (rgb_buffer != nullptr);
 }
 

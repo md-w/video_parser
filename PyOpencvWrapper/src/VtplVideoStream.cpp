@@ -49,10 +49,10 @@ void VtplVideoStream::_do_task()
       break;
     if (_stream == nullptr)
       continue;
-    if (!_q.full()) {
-      int write_idx = _q.getWriteIdx();
-      VtplVideoFrame* frame = _q.getWritable(write_idx);
-    }
+    // if (!_q.full()) {
+    //   int write_idx = _q.getWriteIdx();
+    //   VtplVideoFrame* frame = _q.getWritable(write_idx);
+    // }
     std::vector<uint8_t> data;
     if (_stream->read(data)) {
       // put in the q
@@ -76,7 +76,6 @@ void VtplVideoStream::_release()
 {
   if (_stream) {
     RAY_LOG(INFO) << ("Before release");
-    _stream.release();
     _stream.release();
   }
 }
@@ -115,8 +114,10 @@ void VtplVideoStream::stop()
   _is_shutdown = true;
   if (_stream)
     _stream->release();
+  std::cout << "MONO Here 1" << std::endl;
   if (_thread->joinable())
     _thread->join();
+  std::cout << "MONO Here 2" << std::endl;
   RAY_LOG(INFO) << fmt::format("Stop return {} {}", _channel_id, _app_id);
 }
 
