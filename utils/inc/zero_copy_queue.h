@@ -1,6 +1,9 @@
 #pragma once
 #ifndef zero_copy_queue_h
 #define zero_copy_queue_h
+#include <stdint.h>
+#include <atomic>
+// https://github.com/MengRao/WFMPMC.git
 template <typename T, uint32_t SIZE> class zero_copy_queue
 {
   static_assert(SIZE && !(SIZE & (SIZE - 1)), "SIZE must be a power of 2");

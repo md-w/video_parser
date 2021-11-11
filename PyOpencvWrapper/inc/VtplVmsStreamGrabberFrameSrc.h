@@ -27,7 +27,7 @@ private:
   int _time_out_in_sec = 20;
   std::unique_ptr<Poco::Net::StreamSocket> _s;
   bool _is_already_shutting_down = false;
-  std::atomic_bool _is_shutdown = false;
+  std::atomic_bool _is_shutdown;
 
 
 

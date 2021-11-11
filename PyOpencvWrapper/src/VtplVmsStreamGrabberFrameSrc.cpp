@@ -63,17 +63,15 @@ std::vector<char>& VDeviceId::toNetwork()
 {
 
   int offset = 0;
-  decltype(device_id)(*(decltype(device_id)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(device_id);
+  *(decltype(device_id)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(device_id);
   offset += sizeof(decltype(device_id));
-  decltype(channel_id)(*(decltype(channel_id)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(channel_id);
+  *(decltype(channel_id)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(channel_id);
   offset += sizeof(decltype(channel_id));
-  decltype(major_or_minor)(*(decltype(major_or_minor)*)(data_out.data() + offset)) = major_or_minor;
+  *(decltype(major_or_minor)*)(data_out.data() + offset) = major_or_minor;
   offset += sizeof(decltype(major_or_minor));
-  decltype(real_time_mode_or_not)(*(decltype(real_time_mode_or_not)*)(data_out.data() + offset)) =
-      real_time_mode_or_not;
+  *(decltype(real_time_mode_or_not)*)(data_out.data() + offset) = real_time_mode_or_not;
   offset += sizeof(decltype(real_time_mode_or_not));
-  decltype(decoder_initialized_or_not)(*(decltype(decoder_initialized_or_not)*)(data_out.data() + offset)) =
-      decoder_initialized_or_not;
+  *(decltype(decoder_initialized_or_not)*)(data_out.data() + offset) = decoder_initialized_or_not;
   offset += sizeof(decltype(decoder_initialized_or_not));
   return data_out;
 }
@@ -104,22 +102,22 @@ std::vector<char>& VMediaFrame::toNetwork()
 {
 
   int offset = 0;
-  decltype(media_type)(*(decltype(media_type)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(media_type);
+  *(decltype(media_type)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(media_type);
   offset += sizeof(decltype(media_type));
-  decltype(frame_type)(*(decltype(frame_type)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(frame_type);
+  *(decltype(frame_type)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(frame_type);
   offset += sizeof(decltype(bit_rate));
-  decltype(bit_rate)(*(decltype(bit_rate)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(bit_rate);
+  *(decltype(bit_rate)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(bit_rate);
   offset += sizeof(decltype(fps));
-  decltype(fps)(*(decltype(fps)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(fps);
+  *(decltype(fps)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(fps);
   offset += sizeof(decltype(fps));
-  decltype(time_stamp)(*(decltype(time_stamp)*)(data_out.data() + offset)) = Poco::ByteOrder::toNetwork(time_stamp);
+  *(decltype(time_stamp)*)(data_out.data() + offset) = Poco::ByteOrder::toNetwork(time_stamp);
   offset += sizeof(decltype(time_stamp));
 
-  decltype(motion_available)(*(decltype(motion_available)*)(data_out.data() + offset)) = motion_available;
+  *(decltype(motion_available)*)(data_out.data() + offset) = motion_available;
   offset += sizeof(decltype(motion_available));
-  decltype(stream_type)(*(decltype(stream_type)*)(data_out.data() + offset)) = stream_type;
+  *(decltype(stream_type)*)(data_out.data() + offset) = stream_type;
   offset += sizeof(decltype(stream_type));
-  decltype(channel_id)(*(decltype(channel_id)*)(data_out.data() + offset)) = channel_id;
+  *(decltype(channel_id)*)(data_out.data() + offset) = channel_id;
   offset += sizeof(decltype(channel_id));
   return data_out;
 }

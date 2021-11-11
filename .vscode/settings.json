@@ -98,7 +98,9 @@
         "hash_set": "cpp",
         "random": "cpp",
         "regex": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "*.tcc": "cpp",
+        "string_view": "cpp"
     },
     //"C_Cpp.clang_format_fallbackStyle": " { BasedOnStyle: Google, ColumnLimit: 120}",
     "python.autoComplete.extraPaths": [

@@ -1,4 +1,3 @@
-#include "WFMPMC.h"
 #include "zero_copy_queue.h"
 #include <condition_variable>
 #include <iostream>
@@ -54,12 +53,13 @@ public:
   }
   std::shared_ptr<T> wait_and_pop(int wait_sec)
   {
+    std::shared_ptr<T> res;
     std::unique_lock<std::mutex> lk(mut);
     if (data_cond.wait_for(lk, std::chrono::seconds(wait_sec), [this] { return !data_queue.empty(); })) {
-      std::shared_ptr<T> res(std::make_shared<T>(data_queue.front()));
+      res.reset(std::make_shared<T>(data_queue.front()));
       data_queue.pop();
     } else {
-      std::shared_ptr<T> res;
+      res.reset(nullptr);
     }
     return res;
   }

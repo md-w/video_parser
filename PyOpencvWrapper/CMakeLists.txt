@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.17)
 
 project(PyOpencvWrapper)
 
-# find_package(Iconv REQUIRED)
+if(NOT WIN32)
+find_package(Iconv REQUIRED)
 message("Iconv ${Iconv_LIBRARY}")
+endif(NOT WIN32)
 
 set(OpenCV_STATIC TRUE)
 message(STATUS "OpenCV_Search path:" + ${CMAKE_SOURCE_DIR}/thirdparty/install_debug)
@@ -85,7 +87,7 @@ add_library(vtpl_video_stream STATIC
     src/VtplVmsStreamGrabberFrameSrc.cpp
     src/Decoder.cpp
     src/VtplVideoFrame.cpp
-    src/CodecManager.cpp
+    src/codecManager.cpp
 )
 
 target_include_directories(vtpl_video_stream

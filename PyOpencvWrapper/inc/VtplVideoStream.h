@@ -19,8 +19,8 @@ private:
   uint16_t _app_id;
 
   bool _reconnect_requested;
-  bool _is_already_shutting_down = false;
-  std::atomic_bool _is_shutdown = false;
+  bool _is_already_shutting_down;
+  std::atomic_bool _is_shutdown;
   bool _is_eos = false;
   int _reconnect_retry_time = 1;
   float _suggested_fps = 25.0;

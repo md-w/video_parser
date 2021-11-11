@@ -6,7 +6,8 @@
 
 VtplVideoStream::VtplVideoStream(std::string path, uint16_t channel_id, uint32_t app_id, float suggested_fps,
                                  bool is_blocking, int gpu_id, int seek_time)
-    : _channel_id(channel_id), _app_id(app_id), _reconnect_requested(false)
+    : _channel_id(channel_id), _app_id(app_id), _reconnect_requested(false), _is_already_shutting_down(false),
+      _is_shutdown(false)
 {
   _get_stream_url(path);
 }
@@ -48,8 +49,7 @@ void VtplVideoStream::_do_task()
       break;
     if (_stream == nullptr)
       continue;
-    if (!_q.full())
-    {
+    if (!_q.full()) {
       int write_idx = _q.getWriteIdx();
       VtplVideoFrame* frame = _q.getWritable(write_idx);
     }
