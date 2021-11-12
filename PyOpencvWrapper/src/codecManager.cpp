@@ -24,42 +24,28 @@
 #define CODEC_LIB_DEBUG 1
 
 typedef Int32 (*FnPtrCodecLib_NP)();
-typedef Int32 (*FnPtrCodecLib_5I1VP)(void* dataSpace, Codec_Type codecType,
-                                     Int32 width, Int32 height, Int32 bitRate,
+typedef Int32 (*FnPtrCodecLib_5I1VP)(void* dataSpace, Codec_Type codecType, Int32 width, Int32 height, Int32 bitRate,
                                      Format_Type inFormatType);
 typedef Int32 (*FnPtrCodecLib_1VP)(void* dataSpace);
-typedef Int32 (*FnPtrCodecLib_1VP2UCP1IP)(void* dataSpace,
-                                          unsigned char* frameBuff,
-                                          Int32* frameSize,
+typedef Int32 (*FnPtrCodecLib_1VP2UCP1IP)(void* dataSpace, unsigned char* frameBuff, Int32* frameSize,
                                           unsigned char* rgbBuff);
-typedef Int32 (*FnPtrCodecLib_1VP2I)(void* dataSpace, Codec_Type codecType,
-                                     Format_Type outFormatType);
-typedef Int32 (*FnPtrCodecLib_1VP2UC2IP1I)(void* dataSpace,
-                                           unsigned char* frameBuff,
-                                           Int32 frameSize,
-                                           unsigned char* rgbBuff, Int32* width,
-                                           Int32* height);
+typedef Int32 (*FnPtrCodecLib_1VP2I)(void* dataSpace, Codec_Type codecType, Format_Type outFormatType);
+typedef Int32 (*FnPtrCodecLib_1VP2UC2IP1I)(void* dataSpace, unsigned char* frameBuff, Int32 frameSize,
+                                           unsigned char* rgbBuff, Int32* width, Int32* height);
 
-typedef Int32 (*FnPtrCodecLib_decodeframeNew)(
-    void* dataSpace, unsigned char* frameBuff, int frameSize,
-    unsigned char* rgbBuff, int rgbBuffLen, int* width, int* height,
-    bool decodeAndResize, long long timeStamp);
+typedef Int32 (*FnPtrCodecLib_decodeframeNew)(void* dataSpace, unsigned char* frameBuff, int frameSize,
+                                              unsigned char* rgbBuff, int rgbBuffLen, int* width, int* height,
+                                              bool decodeAndResize, long long timeStamp);
 
-typedef Int32 (*FnPtrCodecLib_2UC2IP3I)(Codec_Type codecType,
-                                        unsigned char* frameBuff,
-                                        Int32 frameSize, unsigned char* rgbBuff,
-                                        Int32* width, Int32* height,
-                                        Format_Type outFormatType);
+typedef Int32 (*FnPtrCodecLib_2UC2IP3I)(Codec_Type codecType, unsigned char* frameBuff, Int32 frameSize,
+                                        unsigned char* rgbBuff, Int32* width, Int32* height, Format_Type outFormatType);
 
-typedef Int32 (*FnPtrCodecLib_decodeFrameGetGPUPoiner)(
-    void* dataSpace, unsigned char* frameBuff, int frameSize,
-    unsigned char** rgbBuff, int* width, int* height, long long frameTimeStamp,
-    long long* pOutTimeStamp, unsigned int frameType);
-typedef Int32 (*FnPtrCodecLib_getLastDecodedFrame)(void* dataSpace,
-                                                   unsigned char* rgbBuff);
-typedef Int32 (*FnPtrCodecLib_initDecoderGPU)(void* dataSpace,
-                                              Codec_Type codecType,
-                                              Format_Type outFormatType,
+typedef Int32 (*FnPtrCodecLib_decodeFrameGetGPUPoiner)(void* dataSpace, unsigned char* frameBuff, int frameSize,
+                                                       unsigned char** rgbBuff, int* width, int* height,
+                                                       long long frameTimeStamp, long long* pOutTimeStamp,
+                                                       unsigned int frameType);
+typedef Int32 (*FnPtrCodecLib_getLastDecodedFrame)(void* dataSpace, unsigned char* rgbBuff);
+typedef Int32 (*FnPtrCodecLib_initDecoderGPU)(void* dataSpace, Codec_Type codecType, Format_Type outFormatType,
                                               int gpuIndex);
 
 typedef FnPtrCodecLib_NP InitCodecLib;
@@ -90,23 +76,28 @@ InitDecoderGPU _initDecoderGPU;
 
 int _LoadCodecLibrary()
 {
+  const char* libName =
 #ifdef _WIN32
-  HINSTANCE dllHandle = LoadLibraryA("./lib/VImageCodec.dll");
+      "./lib/VImageCodec.dll";
 #else
-  void* dllHandle = dlopen("./lib/libVImageCodecCUDA2021.so", RTLD_LAZY);
+      "./lib/libVImageCodec3.so";
+#endif
+#ifdef _WIN32
+  HINSTANCE dllHandle = LoadLibraryA(libName);
+#else
+  void* dllHandle = dlopen(libName, RTLD_LAZY);
 #endif
 
   if (!dllHandle) {
 #if CODEC_LIB_DEBUG
-    printf("Failed to load libVImageCodecCUDA2021 library\n");
+    printf("Failed to load %s library\n", libName);
     fflush(stdout);
     exit(0);
 #endif
     return VA_LIBRARY_LOAD_FAIL;
   }
 
-  _initCodecLib =
-      (InitCodecLib)GET_FUNCTION_ADDRESS(dllHandle, "initCodecLibrary");
+  _initCodecLib = (InitCodecLib)GET_FUNCTION_ADDRESS(dllHandle, "initCodecLibrary");
   if (!_initCodecLib) {
 #if CODEC_LIB_DEBUG
     printf("initCodecLibrary loading failed\n"
@@ -193,8 +184,7 @@ int _LoadCodecLibrary()
     return VA_LIBRARY_LOAD_FAIL;
   }
 
-  _decodeSingleFrame =
-      (DecodeSingleImage)GET_FUNCTION_ADDRESS(dllHandle, "getSingleImageSnap");
+  _decodeSingleFrame = (DecodeSingleImage)GET_FUNCTION_ADDRESS(dllHandle, "getSingleImageSnap");
   if (!_decodeSingleFrame) {
 #if CODEC_LIB_DEBUG
     printf("getSingleImageSnap loading failed\n"
@@ -205,8 +195,7 @@ int _LoadCodecLibrary()
     return VA_LIBRARY_LOAD_FAIL;
   }
 
-  _decodeFrameGetGPUPoiner = (DecodeFrameGetGPUPoiner)GET_FUNCTION_ADDRESS(
-      dllHandle, "decodeFrameGetGPUPoiner");
+  _decodeFrameGetGPUPoiner = (DecodeFrameGetGPUPoiner)GET_FUNCTION_ADDRESS(dllHandle, "decodeFrameGetGPUPoiner");
   if (!_decodeFrameGetGPUPoiner) {
 #if CODEC_LIB_DEBUG
     printf("decodeFrameGetGPUPoiner loading failed\n"
@@ -216,8 +205,7 @@ int _LoadCodecLibrary()
     // return VA_LIBRARY_LOAD_FAIL;
   }
 
-  _getLastDecodedFrame = (GetLastDecodedFrame)GET_FUNCTION_ADDRESS(
-      dllHandle, "getLastDecodedFrame");
+  _getLastDecodedFrame = (GetLastDecodedFrame)GET_FUNCTION_ADDRESS(dllHandle, "getLastDecodedFrame");
   if (!_getLastDecodedFrame) {
 #if CODEC_LIB_DEBUG
     printf("getLastDecodedFrame loading failed\n"
@@ -227,8 +215,7 @@ int _LoadCodecLibrary()
     // return VA_LIBRARY_LOAD_FAIL;
   }
 
-  _initDecoderGPU =
-      (InitDecoderGPU)GET_FUNCTION_ADDRESS(dllHandle, "initDecoderGPU");
+  _initDecoderGPU = (InitDecoderGPU)GET_FUNCTION_ADDRESS(dllHandle, "initDecoderGPU");
   if (!_initDecoderGPU) {
 #if CODEC_LIB_DEBUG
     printf("initDecoderGPU loading failed\n"
@@ -249,66 +236,54 @@ int initCodecLibrary()
   return rs;
 }
 
-int getSingleImageSnap(Codec_Type codecType, unsigned char* frameBuff,
-                       Int32 frameSize, unsigned char* rgbBuff, Int32* width,
-                       Int32* height, Format_Type outFormatType)
+int getSingleImageSnap(Codec_Type codecType, unsigned char* frameBuff, Int32 frameSize, unsigned char* rgbBuff,
+                       Int32* width, Int32* height, Format_Type outFormatType)
 {
-  return _decodeSingleFrame(codecType, frameBuff, frameSize, rgbBuff, width,
-                            height, outFormatType);
+  return _decodeSingleFrame(codecType, frameBuff, frameSize, rgbBuff, width, height, outFormatType);
 }
 
-Int32 initEncoder(void* dataSpace, Codec_Type codecType, Int32 width,
-                  Int32 height, Int32 bitRate, Format_Type inFormatType)
+Int32 initEncoder(void* dataSpace, Codec_Type codecType, Int32 width, Int32 height, Int32 bitRate,
+                  Format_Type inFormatType)
 {
-  return _initEncoder(dataSpace, codecType, width, height, bitRate,
-                      inFormatType);
+  return _initEncoder(dataSpace, codecType, width, height, bitRate, inFormatType);
 }
 Int32 freeEncoder(void* dataSpace) { return _freeEncoder(dataSpace); }
-Int32 encodeFrame(void* dataSpace, unsigned char* frameBuff, Int32* frameSize,
-                  unsigned char* rgbBuff)
+Int32 encodeFrame(void* dataSpace, unsigned char* frameBuff, Int32* frameSize, unsigned char* rgbBuff)
 {
   return _encodeFrame(dataSpace, frameBuff, frameSize, rgbBuff);
 }
 
-Int32 initDecoder(void* dataSpace, Codec_Type codecType,
-                  Format_Type outFormatType)
+Int32 initDecoder(void* dataSpace, Codec_Type codecType, Format_Type outFormatType)
 {
   return _initDecoder(dataSpace, codecType, outFormatType);
 }
 
 Int32 freeDecoder(void* dataSpace) { return _freeDecoder(dataSpace); }
 
-Int32 decodeFrame(void* dataSpace, unsigned char* frameBuff, Int32 frameSize,
-                  unsigned char* rgbBuff, Int32* width, Int32* height)
+Int32 decodeFrame(void* dataSpace, unsigned char* frameBuff, Int32 frameSize, unsigned char* rgbBuff, Int32* width,
+                  Int32* height)
 {
   return _decodeFrame(dataSpace, frameBuff, frameSize, rgbBuff, width, height);
 }
 
-Int32 decodeFrameNew(void* dataSpace, unsigned char* frameBuff, int frameSize,
-                     unsigned char* rgbBuff, int rgbBuffLen, int* width,
-                     int* height, bool decodeAndResize, long long timeStamp)
+Int32 decodeFrameNew(void* dataSpace, unsigned char* frameBuff, int frameSize, unsigned char* rgbBuff, int rgbBuffLen,
+                     int* width, int* height, bool decodeAndResize, long long timeStamp)
 {
-  return _decodeframeNew(dataSpace, frameBuff, frameSize, rgbBuff, rgbBuffLen,
-                         width, height, decodeAndResize, timeStamp);
+  return _decodeframeNew(dataSpace, frameBuff, frameSize, rgbBuff, rgbBuffLen, width, height, decodeAndResize,
+                         timeStamp);
 }
 
-int decodeFrameGetGPUPoiner(void* dataSpace, unsigned char* frameBuff,
-                            int frameSize, unsigned char** rgbBuff, int* width,
-                            int* height, long long frameTimeStamp,
-                            long long* pOutTimeStamp, unsigned int frameType)
+int decodeFrameGetGPUPoiner(void* dataSpace, unsigned char* frameBuff, int frameSize, unsigned char** rgbBuff,
+                            int* width, int* height, long long frameTimeStamp, long long* pOutTimeStamp,
+                            unsigned int frameType)
 {
-  return _decodeFrameGetGPUPoiner(dataSpace, frameBuff, frameSize, rgbBuff,
-                                  width, height, frameTimeStamp, pOutTimeStamp,
-                                  frameType);
+  return _decodeFrameGetGPUPoiner(dataSpace, frameBuff, frameSize, rgbBuff, width, height, frameTimeStamp,
+                                  pOutTimeStamp, frameType);
 }
 
-int getLastDecodedFrame(void* dataSpace, unsigned char* rgbBuff)
-{
-  return _getLastDecodedFrame(dataSpace, rgbBuff);
-}
+int getLastDecodedFrame(void* dataSpace, unsigned char* rgbBuff) { return _getLastDecodedFrame(dataSpace, rgbBuff); }
 
-int initDecoderGPU(void* dataSpace, Codec_Type codecType,
-                   Format_Type outFormatType, int gpuIndex)
+int initDecoderGPU(void* dataSpace, Codec_Type codecType, Format_Type outFormatType, int gpuIndex)
 {
   return _initDecoderGPU(dataSpace, codecType, outFormatType, gpuIndex);
 }

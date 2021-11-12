@@ -71,7 +71,12 @@ void VtplVideoStream::start()
   _reconnect_requested = true;
   _thread.reset(new std::thread(&VtplVideoStream::_do_task, this));
 }
-bool VtplVideoStream::read(std::vector<uint8_t>& data_out) { return false; }
+bool VtplVideoStream::read(std::vector<uint8_t>& data_out)
+{
+  data_out.resize(10);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  return true;
+}
 void VtplVideoStream::_release()
 {
   if (_stream) {
