@@ -35,10 +35,9 @@ private:
   void* _decoder_data_space = nullptr;
   int _rgb_width = 1920;
   int _rgb_height = 1080;
-  unsigned char* _rgb_buffer = nullptr;
+  uint8_t* _rgb_buffer = nullptr;
 
   std::ofstream bin_file;
-  FILE * pFile = NULL;
 
   void _get_remote_ip_port_channel(std::string& source_url);
   void _connect_to_vms();

@@ -15,7 +15,7 @@ bool read_data_n(Poco::Net::StreamSocket& s, std::vector<uint8_t>& data_array, i
     int x = bytes_to_read - length;
     if (x > 0) {
       try {
-        int length_received = s.receiveBytes(data_array.data(), x);
+        int length_received = s.receiveBytes(&(data_array[length]), x);
         if (length_received <= 0) {
           // std::string host = s.peerAddress().toString();
           // std::cout << "host: " << host << " s.getReceiveBufferSize() " << s.getReceiveBufferSize() << std::endl;
@@ -145,12 +145,12 @@ VtplVmsStreamGrabberFrameSrc::VtplVmsStreamGrabberFrameSrc(std::string source_ur
   _v_device_id.major_or_minor = _major_minor;
   std::cout << " _remote_ip: " << _remote_ip << " _remote_port: " << _remote_port << " _channel_id: " << _channel_id
             << " _major_minor: " << (uint16_t)_major_minor << std::endl;
-  _buff.resize(600 * 1024);
+  int buff_size = 600 * 1024;
+  _buff.resize(buff_size);
   _buff2.resize(28);
   _connect_to_vms();
 
-  // bin_file.open("encrypted_buffer.264", std::ios::out | std::ios::binary);
-  pFile = fopen("33.264", "wb");
+  bin_file.open("34.264", std::ios::out | std::ios::binary);
 }
 
 VtplVmsStreamGrabberFrameSrc::~VtplVmsStreamGrabberFrameSrc() {}
@@ -239,10 +239,10 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
     if (std::chrono::duration_cast<std::chrono::seconds>(current_time - entry_time).count() > _time_out_in_sec)
       break;
     if (read_data_n(*_s, _buff, 4) == false) {
-      // std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::this_thread::sleep_for(std::chrono::seconds(1));
       continue;
     }
-    int32_t buff_len = Poco::ByteOrder::fromNetwork((int32_t)(*(int32_t*)_buff.data()));
+    int32_t buff_len = Poco::ByteOrder::fromNetwork(*reinterpret_cast<int32_t*>(&_buff[0]));
     if (buff_len <= 0) {
       // std::cerr << __FILE__ << " : " << __LINE__ << " Zero length buffer received" << '\n';
       continue;
@@ -253,14 +253,17 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
       continue;
     } else {
       if (buff_len > _buff.size()) { // low buffer
-        _buff.resize((buff_len / 32 + 1) * 32);
+        std::cout << "Reallocating memory" << std::endl;
+
+        int buff_size = ((buff_len / 32 + 1) * 32);
+        _buff.resize(buff_size);
       }
       if (read_data_n(*_s, _buff, buff_len) == false) {
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;
       }
       if (read_data_n(*_s, _buff2, 28) == false) {
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;
       }
       VMediaFrame frame_info;
@@ -278,11 +281,8 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
             ((Codec_Type)frame_info.media_type == Codec_Type::H265))) {
         continue;
       }
-      std::cout << "buff_len: " << buff_len << std::endl;
-      // bin_file.write(reinterpret_cast<const char*>(_buff.data()), buff_len);
-      // bin_file.flush();
-      fwrite(_buff.data(), sizeof(uint8_t), buff_len, pFile);
-      fflush(pFile);
+      // std::cout << "buff_len: " << buff_len << std::endl;
+      bin_file.write(reinterpret_cast<const char*>(&_buff[0]), buff_len);
 #if 0
       if (_decoder_data_space == nullptr) {
         if (!(initDecoder(&_decoder_data_space, (Codec_Type)frame_info.media_type, ARGB) == 0)) {
@@ -373,11 +373,7 @@ void VtplVmsStreamGrabberFrameSrc::release()
   _is_already_shutting_down = true;
   _is_shutdown = true;
   std::cout << "Closing file" << std::endl;
-  // bin_file.close();
-  if (pFile) {
-    fclose(pFile);
-    pFile = NULL;
-  }
+  bin_file.close();
   std::cout << "File closed" << std::endl;
   _close();
   std::cout << "Here 2" << std::endl;

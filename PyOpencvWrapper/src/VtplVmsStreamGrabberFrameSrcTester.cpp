@@ -95,7 +95,7 @@ public:
     // grabber.reset(new VtplVideoStream("file:///home/vadmin/gva/data/video/11.mp4", 0, 0, 20.0));
     // grabber.reset(new VtplVideoStream("file:///home/vadmin/gva/data/video/11.mp4", 0, 0, 20.0, true));
     // grabber.reset(new VtplVideoStream("vms://192.168.1.178:3005/1/1/1/1"));
-    grabber.reset(new VtplVideoStream("vms://192.168.0.171:3005/9/0/1/1"));
+    grabber.reset(new VtplVideoStream("vms://192.168.0.171:3005/9/0/192_168_1_198"));
     _thread.reset(new std::thread(&VtplVideoStreamTester::run, this));
   }
   void run()
@@ -191,6 +191,7 @@ public:
       data_dir = get_session_folder();
     }
     Poco::Net::initializeNetwork();
+    initCodecLibrary();
     VtplVideoStreamTester vtpl_video_stream_tester;
     waitForTerminationRequest();
     vtpl_video_stream_tester.stop();
