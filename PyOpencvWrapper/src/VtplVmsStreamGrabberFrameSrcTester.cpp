@@ -115,7 +115,7 @@ public:
         break;
       }
       count += 1;
-      RAY_LOG(INFO) << fmt::format("count {}", count);
+      // RAY_LOG(INFO) << fmt::format("count {}", count);
     }
     RAY_LOG(INFO) << "VtplVideoStreamTester end";
   }

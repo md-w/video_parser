@@ -3,7 +3,9 @@
 #include <Poco/ByteOrder.h>
 #include <Poco/Net/NetException.h>
 #include <chrono>
+#include <opencv2/opencv.hpp>
 #include <thread>
+
 bool read_data_n(Poco::Net::StreamSocket& s, std::vector<uint8_t>& data_array, int bytes_to_read)
 {
   int length = 0;
@@ -283,7 +285,7 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
       }
       // std::cout << "buff_len: " << buff_len << std::endl;
       bin_file.write(reinterpret_cast<const char*>(&_buff[0]), buff_len);
-#if 0
+#if 1
       if (_decoder_data_space == nullptr) {
         if (!(initDecoder(&_decoder_data_space, (Codec_Type)frame_info.media_type, ARGB) == 0)) {
           continue;
@@ -324,19 +326,19 @@ bool VtplVmsStreamGrabberFrameSrc::read(std::vector<uint8_t>& data)
           //         outTimeStamp);
           // writePPMFromBgra(rgbBuffer, rgbHeight, rgbWidth, op);
           // printf("\n[%d] Success", frame_count);
-          // cv::Mat inMat = cv::Mat(rgbHeight, rgbWidth, CV_8UC4, (unsigned char*)rgbBuffer);
-          // cv::Mat frame;
-          // cv::cvtColor(inMat, frame, cv::ColorConversionCodes::COLOR_BGRA2BGR);
+          cv::Mat inMat = cv::Mat(_rgb_height, _rgb_width, CV_8UC4, (unsigned char*)_rgb_buffer);
+          cv::Mat frame;
+          cv::cvtColor(inMat, frame, cv::ColorConversionCodes::COLOR_BGRA2BGR);
           // ultraface.getResult(frame);
-          // cv::namedWindow("vtpl_opencv", cv::WINDOW_NORMAL);
-          // cv::imshow("vtpl_opencv", frame);
-          // cv::waitKey(1);
+          cv::namedWindow("vtpl_opencv", cv::WINDOW_NORMAL);
+          cv::imshow("vtpl_opencv", frame);
+          cv::waitKey(1);
           break;
         } else {
           // printf("\n[%d] Error\n", i);
           break;
         }
-     }
+      }
 #endif
       long long outTimeStamp = 0;
       ret = true;

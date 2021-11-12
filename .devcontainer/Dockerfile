@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends ca-certificates software-properties-common \
     git curl wget clang-format ninja-build build-essential gdb python3-tk python3-pip python3-setuptools \
-    python3-dev python3-venv ffmpeg libavcodec-dev libavfilter-dev libavformat-dev libavutil-dev
+    python3-dev python3-venv ffmpeg libavcodec-dev libavfilter-dev libavformat-dev libavutil-dev libgtk-3-dev pkg-config
 
 RUN wget -O cmake.sh https://github.com/Kitware/CMake/releases/download/v3.20.5/cmake-3.20.5-linux-x86_64.sh \
     && sh cmake.sh --prefix=/usr/local/ --exclude-subdir && rm -rf cmake.sh
